@@ -1,0 +1,69 @@
+{
+  "name": "react-native-swiper-animated",
+  "version": "0.0.1",
+  "description": "Tinder-like swiper for react-native",
+  "main": "index.js",
+  "scripts": {
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "test": "jest",
+    "pretest": "npm run lint --silent",
+    "lint": "eslint . --ext .js,.jsx"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chitezh/react-native-swiper-animated.git"
+  },
+  "keywords": [
+    "Tinder",
+    "Swiper",
+    "Flip",
+    "Cards",
+    "Stack"
+  ],
+  "author": "Kingsley Ochu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chitezh/react-native-swiper-animated/issues"
+  },
+  "homepage": "https://github.com/chitezh/react-native-swiper-animated#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "babel-eslint": "^7.1.1",
+    "babel-jest": "18.0.0",
+    "babel-preset-react-native": "1.9.1",
+    "eslint": "^3.13.1",
+    "eslint-config-airbnb": "^14.0.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^3.0.2",
+    "eslint-plugin-react": "^6.9.0",
+    "jest": "18.1.0",
+    "react-test-renderer": "15.4.2"
+  },
+  "jest": {
+    "preset": "react-native"
+  },
+  "eslintConfig": {
+    "parser": "babel-eslint",
+    "parserOptions": {
+      "ecmaVersion": 6,
+      "sourceType": "module"
+    },
+    "env": {
+      "browser": true,
+      "node": true
+    },
+    "extends": "airbnb",
+    "rules": {
+      "prefer-template": 0,
+      "react/jsx-filename-extension": [
+        2,
+        {
+          "extensions": [
+            ".js",
+            ".jsx"
+          ]
+        }
+      ]
+    }
+  }
+}
