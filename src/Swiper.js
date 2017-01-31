@@ -3,11 +3,13 @@ import React, { Component, PropTypes } from 'react';
 import {
   StyleSheet,
   View,
+  Text,
   Animated,
   PanResponder,
 } from 'react-native';
 import clamp from 'clamp';
 import uuid from 'react-native-uuid';
+import { COLOR, ThemeProvider, Toolbar } from 'react-native-material-ui';
 
 const SWIPE_THRESHOLD = 120;
 
@@ -19,17 +21,39 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
   },
+  dot: {
+    height: 5,
+    width: 5,
+    borderRadius: 5,
+    marginLeft: 3,
+    marginRight: 3,
+  },
+  dotContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
 
 const currentIndex = {};
-let guid = 0;
+const uiTheme = {
+  palette: {
+    primaryColor: COLOR.green500,
+  },
+  toolbar: {
+    container: {
+      height: 50,
+    },
+  },
+};
 
-export default class SwipeCards extends Component {
+export default class Swiper extends Component {
 
   static propTypes = {
-    guid: PropTypes.number,
     cards: PropTypes.array,
     children: PropTypes.array,
+    styles: PropTypes.any,
     loop: PropTypes.bool,
     allowGestureTermination: PropTypes.bool,
     stack: PropTypes.bool,
@@ -43,12 +67,19 @@ export default class SwipeCards extends Component {
     renderCard: PropTypes.func,
     onRemoveCard: PropTypes.func,
     dragY: PropTypes.bool,
+    showPagination: PropTypes.bool,
+    paginationStyle: PropTypes.any,
+    paginationLeft: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
+    paginationRight: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
+    onPaginationLeftPress: PropTypes.func,
+    onPaginationRightPress: PropTypes.func,
+    onFinish: PropTypes.func,
   };
 
   static defaultProps = {
-    guid: 0,
     cards: [],
     children: [],
+    styles: {},
     loop: false,
     allowGestureTermination: true,
     stack: false,
@@ -61,19 +92,30 @@ export default class SwipeCards extends Component {
     },
     onLeftSwipe: () => {
     },
-    onRemoveCard: () => {},
+    onRemoveCard: () => {
+    },
     renderCard: null,
-    renderNoMoreCards: () => {},
+    renderNoMoreCards: () => {
+    },
     style: styles.container,
     dragY: true,
+    showPagination: true,
+    paginationStyle: { container: { paddingLeft: 10, paddingRight: 10 } },
+    paginationLeft: <Text>HOME</Text>,
+    paginationRight: <Text>SHARE</Text>,
+    onPaginationLeftPress: () => {
+    },
+    onPaginationRightPress: () => {
+    },
+    onFinish: () => {},
   };
 
   constructor(props) {
     super(props);
 
-    const { guid: _guid, cards, children } = this.props;
+    const { cards, children } = this.props;
 
-    this.guid = _guid || (guid += 1);
+    this.guid = uuid();
     if (!currentIndex[this.guid]) currentIndex[this.guid] = 0;
 
     this.state = {
@@ -121,26 +163,21 @@ export default class SwipeCards extends Component {
           velocity = clamp(vx * -1, 3, 5) * -1;
         }
 
-        if (Math.abs(pan.x._value) > SWIPE_THRESHOLD) {
-          let swipped = false;
+        const panX = Math.abs(pan.x._value);
+        const panY = Math.abs(pan.y._value);
 
+        if ((!isNaN(panY) && panX > SWIPE_THRESHOLD) || (!isNaN(panY) && panY > SWIPE_THRESHOLD)) {
           if (pan.x._value > 0) {
-            swipped = true;
             onRightSwipe(card);
           } else {
             onLeftSwipe(card);
-          }
-
-          // Yup or nope was cancelled, return the card to normal.
-          if (swipped) {
-            this._resetPan();
-            return;
           }
 
           this.cardAnimation = Animated.decay(pan, {
             velocity: { x: velocity, y: vy },
             deceleration: 0.98,
           });
+
           this.cardAnimation.start((status) => {
             if (status.finished) this._advanceState();
             else this._resetState();
@@ -157,11 +194,9 @@ export default class SwipeCards extends Component {
     });
   }
 
-
   componentDidMount() {
     this._animateEntrance();
   }
-
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.cards !== this.props.cards) {
@@ -172,12 +207,11 @@ export default class SwipeCards extends Component {
 
       currentIndex[this.guid] = 0;
       this.setState({
-        cards: [].concat(nextProps.cards),
+        cards: [...nextProps.cards],
         card: nextProps.cards[0],
       });
     }
   }
-
 
   /**
    * Returns current card object
@@ -187,17 +221,31 @@ export default class SwipeCards extends Component {
   }
 
   _goToNextCard() {
-    currentIndex[this.guid] += 1;
+    const total = this.state.cards.length;
+    if (currentIndex[this.guid] < total - 1) {
+      currentIndex[this.guid] += 1;
+
+      this.setState({
+        card: this.state.cards[currentIndex[this.guid]],
+      });
+    } else if (currentIndex[this.guid] === total - 1) {
+      if (this.props.loop) {
+        currentIndex[this.guid] = 0;
+
+        this.setState({
+          card: this.state.cards[currentIndex[this.guid]],
+        });
+      } else {
+        this.props.onFinish();
+      }
+    }
+
 
     // Checks to see if last card.
     // If props.loop=true, will start again from the first card.
     if (currentIndex[this.guid] > this.state.cards.length - 1 && this.props.loop) {
       currentIndex[this.guid] = 0;
     }
-
-    this.setState({
-      card: this.state.cards[currentIndex[this.guid]],
-    });
   }
 
 
@@ -247,7 +295,8 @@ export default class SwipeCards extends Component {
   _forceLeftSwipe() {
     this.cardAnimation = Animated.timing(this.state.pan, {
       toValue: { x: -500, y: 0 },
-    }).start((status) => {
+    })
+    .start((status) => {
       if (status.finished) this._advanceState();
       else this._resetState();
 
@@ -276,6 +325,41 @@ export default class SwipeCards extends Component {
     }
 
     return <View />;
+  }
+
+  renderPagination() {
+    const total = this.state.cards.length;
+    const index = currentIndex[this.guid];
+    const {
+      paginationLeft,
+      paginationRight, onPaginationLeftPress,
+      onPaginationRightPress,
+      paginationStyle,
+    } = this.props;
+
+    const dots = [];
+    for (let i = 0; i < total; i += 1) {
+      dots.push(<View
+        key={uuid()}
+        style={[styles.dot, {
+          backgroundColor: '#C5C5C5',
+        },
+          index >= i ? { backgroundColor: '#4D4D4E' } : null]}
+      />);
+    }
+
+    return (
+      <Toolbar
+        style={paginationStyle}
+        leftElement={paginationLeft}
+        onLeftElementPress={onPaginationLeftPress}
+        onRightElementPress={onPaginationRightPress}
+        rightElement={paginationRight}
+        centerElement={<View
+          style={styles.dotContainer}
+        >{dots}</View>}
+      />
+    );
   }
 
   /**
@@ -409,10 +493,15 @@ export default class SwipeCards extends Component {
   }
 
   render() {
+    const { stack, showPagination, styles: propStyle } = this.props;
+
     return (
-      <View style={styles.container}>
-        {this.props.stack ? this.renderStack() : this.renderCard()}
-      </View>
+      <ThemeProvider uiTheme={uiTheme}>
+        <View style={[styles.container, propStyle]}>
+          {showPagination ? this.renderPagination() : null}
+          {stack ? this.renderStack() : this.renderCard()}
+        </View>
+      </ThemeProvider>
     );
   }
 }

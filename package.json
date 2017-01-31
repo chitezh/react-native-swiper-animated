@@ -28,6 +28,7 @@
   "homepage": "https://github.com/chitezh/react-native-swiper-animated#readme",
   "dependencies": {
     "clamp": "^1.0.1",
+    "react-native-material-ui": "^1.6.0",
     "react-native-uuid": "^1.4.9"
   },
   "devDependencies": {

@@ -35,8 +35,9 @@ const styles = {
 
 export default () => <Swiper
   style={styles.wrapper}
+  paginationStyle={{ container: { backgroundColor: 'transparent' } }}
+  paginationLeft="home"
   showsButtons
-  loop
 >
   <View style={styles.slide1}>
     <Text style={styles.text}>Hello Swiper</Text>
