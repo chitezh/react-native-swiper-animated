@@ -6,8 +6,7 @@ import {
 import Swiper from 'react-native-swiper-animated';
 
 const styles = {
-  wrapper: {
-  },
+  wrapper: {},
   slide1: {
     flex: 1,
     justifyContent: 'center',
@@ -40,26 +39,22 @@ export default class extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      items: [],
-    };
-  }
-  componentDidMount() {
-    this.setState({
       items: [
         { title: 'Hello Swiper', css: styles.slide1 },
         { title: 'Beautiful', css: styles.slide2 },
         { title: 'And simple', css: styles.slide3 },
       ],
-    });
+    };
   }
+
   render() {
     return (
       <Swiper showsButtons>
-        {this.state.items.map((item, key) => (
-          <View key={key} style={item.css}>
+        {this.state.items.map(item => (
+          <View key={Math.Random()} style={item.css}>
             <Text style={styles.text}>{item.title}</Text>
           </View>
-          ))}
+        ))}
       </Swiper>
     );
   }

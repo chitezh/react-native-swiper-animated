@@ -1,3 +1,4 @@
 #/node_modules and /bower_components ignored by default
 
 **/node_modules
+examples
