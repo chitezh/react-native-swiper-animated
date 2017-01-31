@@ -73,6 +73,8 @@ export default class Swiper extends Component {
     paginationRight: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
     onPaginationLeftPress: PropTypes.func,
     onPaginationRightPress: PropTypes.func,
+    paginationDotColor: PropTypes.string,
+    paginationActiveDotColor: PropTypes.string,
     onFinish: PropTypes.func,
   };
 
@@ -107,6 +109,8 @@ export default class Swiper extends Component {
     },
     onPaginationRightPress: () => {
     },
+    paginationDotColor: '#C5C5C5',
+    paginationActiveDotColor: '#4D4D4E',
     onFinish: () => {},
   };
 
@@ -167,7 +171,7 @@ export default class Swiper extends Component {
         const panY = Math.abs(pan.y._value);
 
         if ((!isNaN(panY) && panX > SWIPE_THRESHOLD) || (!isNaN(panY) && panY > SWIPE_THRESHOLD)) {
-          if (pan.x._value > 0) {
+          if (panX > 0) {
             onRightSwipe(card);
           } else {
             onLeftSwipe(card);
@@ -240,7 +244,6 @@ export default class Swiper extends Component {
       }
     }
 
-
     // Checks to see if last card.
     // If props.loop=true, will start again from the first card.
     if (currentIndex[this.guid] > this.state.cards.length - 1 && this.props.loop) {
@@ -301,8 +304,7 @@ export default class Swiper extends Component {
       else this._resetState();
 
       this.cardAnimation = null;
-    },
-    );
+    });
     this.props.onRemoveCard(currentIndex[this.guid]);
   }
 
@@ -314,8 +316,7 @@ export default class Swiper extends Component {
       else this._resetState();
 
       this.cardAnimation = null;
-    },
-    );
+    });
     this.props.onRemoveCard(currentIndex[this.guid]);
   }
 
@@ -335,6 +336,8 @@ export default class Swiper extends Component {
       paginationRight, onPaginationLeftPress,
       onPaginationRightPress,
       paginationStyle,
+      paginationDotColor,
+      paginationActiveDotColor,
     } = this.props;
 
     const dots = [];
@@ -342,9 +345,9 @@ export default class Swiper extends Component {
       dots.push(<View
         key={uuid()}
         style={[styles.dot, {
-          backgroundColor: '#C5C5C5',
+          backgroundColor: paginationDotColor || '#C5C5C5',
         },
-          index >= i ? { backgroundColor: '#4D4D4E' } : null]}
+          index >= i ? { backgroundColor: paginationActiveDotColor || '#4D4D4E' } : null]}
       />);
     }
 
@@ -355,9 +358,7 @@ export default class Swiper extends Component {
         onLeftElementPress={onPaginationLeftPress}
         onRightElementPress={onPaginationRightPress}
         rightElement={paginationRight}
-        centerElement={<View
-          style={styles.dotContainer}
-        >{dots}</View>}
+        centerElement={<View style={styles.dotContainer}>{dots}</View>}
       />
     );
   }
