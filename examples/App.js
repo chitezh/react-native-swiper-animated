@@ -1,46 +1,9 @@
-import React from 'react';
-import { View, Text } from 'react-native';
-// import Swiper from 'react-native-swiper-animated';
-import Swiper from '..';
-
-const styles = StyleSheet.create({
-  wrapper: {
-  },
-  slide1: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#9DD6EB',
-  },
-  slide2: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#97CAE5',
-  },
-  slide3: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#92BBD9',
-  },
-  text: {
-    color: '#fff',
-    fontSize: 30,
-    fontWeight: 'bold',
-  },
-});
-
-export default () => (
-  <Swiper style={styles.wrapper} showsButtons>
-    <View style={styles.slide1}>
-      <Text style={styles.text}>Hello Swiper</Text>
-    </View>
-    <View style={styles.slide2}>
-      <Text style={styles.text}>Beautiful</Text>
-    </View>
-    <View style={styles.slide3}>
-      <Text style={styles.text}>And simple</Text>
-    </View>
-  </Swiper>
-    );
+import { AppRegistry } from 'react-native';
+import Basic from './components/Basic/';
+// import Dynamic from './components/Dynamic/'
+// import Phone from './components/Phone/'
+// import Swiper from './components/Swiper/'
+// import SwiperNumber from './components/SwiperNumber/'
+// import LoadMinimal from './components/LoadMinimal/'
+// import PhotoView from './components/PhotoView/'
+AppRegistry.registerComponent('examples', () => Basic);

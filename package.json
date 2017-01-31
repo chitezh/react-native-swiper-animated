@@ -26,7 +26,10 @@
     "url": "https://github.com/chitezh/react-native-swiper-animated/issues"
   },
   "homepage": "https://github.com/chitezh/react-native-swiper-animated#readme",
-  "dependencies": {},
+  "dependencies": {
+    "clamp": "^1.0.1",
+    "react-native-uuid": "^1.4.9"
+  },
   "devDependencies": {
     "babel-eslint": "^7.1.1",
     "babel-jest": "18.0.0",
@@ -55,15 +58,38 @@
     "extends": "airbnb",
     "rules": {
       "prefer-template": 0,
+      "import/no-extraneous-dependencies": 0,
+      "no-underscore-dangle": 0,
+      "react/forbid-prop-types": 0,
       "react/jsx-filename-extension": [
         2,
         {
           "extensions": [
-            ".js",
-            ".jsx"
+            ".js"
+          ]
+        }
+      ],
+      "import/no-unresolved": [
+        2,
+        {
+          "ignore": [
+            "^react$",
+            "^react-native$",
+            "^react-native/"
           ]
         }
       ]
+    },
+    "settings": {
+      "import/resolver": {
+        "node": {
+          "extensions": [
+            ".js",
+            ".android.js",
+            ".ios.js"
+          ]
+        }
+      }
     }
   }
 }

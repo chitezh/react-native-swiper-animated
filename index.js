@@ -1,3 +1,3 @@
-import Swiper from './src/';
+import Swiper from './src/Swiper';
 
 export default Swiper;
