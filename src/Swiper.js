@@ -53,7 +53,7 @@ export default class Swiper extends Component {
   static propTypes = {
     cards: PropTypes.array,
     children: PropTypes.array,
-    styles: PropTypes.any,
+    style: PropTypes.any,
     loop: PropTypes.bool,
     allowGestureTermination: PropTypes.bool,
     stack: PropTypes.bool,
@@ -81,7 +81,7 @@ export default class Swiper extends Component {
   static defaultProps = {
     cards: [],
     children: [],
-    styles: {},
+    style: {},
     loop: false,
     allowGestureTermination: true,
     stack: false,
@@ -494,7 +494,7 @@ export default class Swiper extends Component {
   }
 
   render() {
-    const { stack, showPagination, styles: propStyle } = this.props;
+    const { stack, showPagination, style: propStyle } = this.props;
 
     return (
       <ThemeProvider uiTheme={uiTheme}>
