@@ -11,7 +11,7 @@ import clamp from 'clamp';
 import uuid from 'react-native-uuid';
 import { COLOR, ThemeProvider, Toolbar } from 'react-native-material-ui';
 
-const SWIPE_THRESHOLD = 120;
+const SWIPE_THRESHOLD = 50;
 
 const styles = StyleSheet.create({
   container: {
@@ -60,7 +60,6 @@ export default class Swiper extends Component {
     stackDepth: PropTypes.number,
     stackOffsetX: PropTypes.number,
     stackOffsetY: PropTypes.number,
-    renderNoMoreCards: PropTypes.func,
     onClick: PropTypes.func,
     onRightSwipe: PropTypes.func,
     onLeftSwipe: PropTypes.func,
@@ -81,9 +80,8 @@ export default class Swiper extends Component {
   static defaultProps = {
     cards: [],
     children: [],
-    style: {},
     loop: false,
-    allowGestureTermination: true,
+    allowGestureTermination: false,
     stack: false,
     stackDepth: 5,
     stackOffsetX: 25,
@@ -97,8 +95,6 @@ export default class Swiper extends Component {
     onRemoveCard: () => {
     },
     renderCard: null,
-    renderNoMoreCards: () => {
-    },
     style: styles.container,
     dragY: true,
     showPagination: true,
@@ -111,7 +107,8 @@ export default class Swiper extends Component {
     },
     paginationDotColor: '#C5C5C5',
     paginationActiveDotColor: '#4D4D4E',
-    onFinish: () => {},
+    onFinish: () => {
+    },
   };
 
   constructor(props) {
@@ -134,67 +131,21 @@ export default class Swiper extends Component {
 
     this.cardAnimation = null;
 
+    this._handleStartShouldSetPanResponder = this._handleStartShouldSetPanResponder.bind(this);
+    this._handleMoveShouldSetPanResponder = this._handleMoveShouldSetPanResponder.bind(this);
+    this._handlePanResponderGrant = this._handlePanResponderGrant.bind(this);
+    this._handlePanResponderMove = this._handlePanResponderMove.bind(this);
+    this._handlePanResponderEnd = this._handlePanResponderEnd.bind(this);
+  }
+
+  componentWillMount() {
     this._panResponder = PanResponder.create({
-      onStartShouldSetPanResponderCapture: (e, gestureState) => {
-        this.lastX = gestureState.moveX;
-        this.lastY = gestureState.moveY;
-        return false;
-      },
-      onMoveShouldSetPanResponderCapture: (e, gestureState) =>
-        (Math.abs(this.lastX - gestureState.moveX) > 5
-        || Math.abs(this.lastY - gestureState.moveY) > 5),
-      onPanResponderGrant: () => {
-        const { pan } = this.state;
-        pan.setOffset({ x: pan.x._value, y: pan.y._value });
-        pan.setValue({ x: 0, y: 0 });
-      },
+      onStartShouldSetPanResponderCapture: this._handleStartShouldSetPanResponder,
+      onMoveShouldSetPanResponderCapture: this._handleMoveShouldSetPanResponder,
+      onPanResponderGrant: this._handlePanResponderGrant,
       onPanResponderTerminationRequest: () => this.props.allowGestureTermination,
-      onPanResponderMove: Animated.event([
-        null, { dx: this.state.pan.x, dy: this.props.dragY ? this.state.pan.y : 0 },
-      ]),
-      onPanResponderRelease: (e, { vx, vy, dx, dy }) => {
-        const { pan, card } = this.state;
-        const { onRightSwipe, onLeftSwipe, onRemoveCard, onClick } = this.props;
-
-        pan.flattenOffset();
-        let velocity;
-        if ((dx === 0) && (dy === 0)) {
-          onClick(card);
-        }
-        if (vx > 0) {
-          velocity = clamp(vx, 3, 5);
-        } else if (vx < 0) {
-          velocity = clamp(vx * -1, 3, 5) * -1;
-        }
-
-        const panX = Math.abs(pan.x._value);
-        const panY = Math.abs(pan.y._value);
-
-        if ((!isNaN(panY) && panX > SWIPE_THRESHOLD) || (!isNaN(panY) && panY > SWIPE_THRESHOLD)) {
-          if (panX > 0) {
-            onRightSwipe(card);
-          } else {
-            onLeftSwipe(card);
-          }
-
-          this.cardAnimation = Animated.decay(pan, {
-            velocity: { x: velocity, y: vy },
-            deceleration: 0.98,
-          });
-
-          this.cardAnimation.start((status) => {
-            if (status.finished) this._advanceState();
-            else this._resetState();
-
-            this.cardAnimation = null;
-          },
-          );
-
-          onRemoveCard(currentIndex[this.guid]);
-        } else {
-          this._resetPan();
-        }
-      },
+      onPanResponderMove: this._handlePanResponderMove(),
+      onPanResponderRelease: this._handlePanResponderEnd,
     });
   }
 
@@ -223,6 +174,68 @@ export default class Swiper extends Component {
   getCurrentCard() {
     return this.state.cards[currentIndex[this.guid]];
   }
+
+  _handleStartShouldSetPanResponder = (e, gestureState) => {
+    this.lastX = gestureState.moveX;
+    this.lastY = gestureState.moveY;
+    return false;
+  }
+  _handleMoveShouldSetPanResponder = (e, gestureState) =>
+    (Math.abs(this.lastX - gestureState.moveX) > 5
+    || Math.abs(this.lastY - gestureState.moveY) > 5);
+
+  _handlePanResponderGrant = () => {
+    const { pan } = this.state;
+    pan.setOffset({ x: pan.x._value, y: pan.y._value });
+    pan.setValue({ x: 0, y: 0 });
+  };
+
+  _handlePanResponderMove = () => Animated.event([
+    null, { dx: this.state.pan.x, dy: this.props.dragY ? this.state.pan.y : 0 },
+  ]);
+
+  _handlePanResponderEnd = (e, { vx, vy, dx, dy }) => {
+    const { pan, card } = this.state;
+    const { onRightSwipe, onLeftSwipe, onRemoveCard, onClick } = this.props;
+
+    pan.flattenOffset();
+    let velocity;
+    if ((dx === 0) && (dy === 0)) {
+      onClick(card);
+    }
+    if (vx >= 0) {
+      velocity = clamp(vx, 3, 5);
+    } else if (vx < 0) {
+      velocity = clamp(vx * -1, 3, 5) * -1;
+    }
+
+    const panX = Math.abs(pan.x._value);
+    const panY = Math.abs(pan.y._value);
+
+    if ((!isNaN(panY) && panX > SWIPE_THRESHOLD) || (!isNaN(panY) && panY > SWIPE_THRESHOLD)) {
+      if (pan.x._value > 0) {
+        onRightSwipe(card);
+      } else {
+        onLeftSwipe(card);
+      }
+
+      this.cardAnimation = Animated.decay(pan, {
+        velocity: { x: velocity, y: vy },
+        deceleration: 0.98,
+      });
+
+      this.cardAnimation.start((status) => {
+        if (status.finished) this._advanceState();
+        else this._resetState();
+
+        this.cardAnimation = null;
+      });
+
+      onRemoveCard(currentIndex[this.guid]);
+    } else {
+      this._resetPan();
+    }
+  };
 
   _goToNextCard() {
     const total = this.state.cards.length;
@@ -320,14 +333,6 @@ export default class Swiper extends Component {
     this.props.onRemoveCard(currentIndex[this.guid]);
   }
 
-  renderNoMoreCards() {
-    if (this.props.renderNoMoreCards) {
-      return this.props.renderNoMoreCards();
-    }
-
-    return <View />;
-  }
-
   renderPagination() {
     const total = this.state.cards.length;
     const index = currentIndex[this.guid];
@@ -368,9 +373,6 @@ export default class Swiper extends Component {
    */
   renderStack() {
     const { stackDepth, stackOffsetX, stackOffsetY } = this.props;
-    if (!this.state.card) {
-      return this.renderNoMoreCards();
-    }
     // Get the next stack of cards to render.
     const cards = this.state.cards.slice(currentIndex[this.guid],
       currentIndex[this.guid] + stackDepth).reverse();
@@ -460,10 +462,6 @@ export default class Swiper extends Component {
   }
 
   renderCard() {
-    if (!this.state.card) {
-      return this.renderNoMoreCards();
-    }
-
     const { pan, enter } = this.state;
     const [translateX, translateY] = [pan.x, pan.y];
 
