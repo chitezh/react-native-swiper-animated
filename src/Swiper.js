@@ -11,7 +11,7 @@ import clamp from 'clamp';
 import uuid from 'react-native-uuid';
 import { COLOR, ThemeProvider, Toolbar } from 'react-native-material-ui';
 
-const SWIPE_THRESHOLD = 100;
+let SWIPE_THRESHOLD = 100;
 
 const styles = StyleSheet.create({
   container: {
@@ -55,6 +55,7 @@ export default class Swiper extends Component {
     children: PropTypes.array,
     style: PropTypes.any,
     loop: PropTypes.bool,
+    swiperThreshold: PropTypes.number,
     allowGestureTermination: PropTypes.bool,
     stack: PropTypes.bool,
     stackDepth: PropTypes.number,
@@ -81,6 +82,7 @@ export default class Swiper extends Component {
     cards: [],
     children: [],
     loop: false,
+    swiperThreshold: null,
     allowGestureTermination: false,
     stack: false,
     stackDepth: 5,
@@ -114,7 +116,9 @@ export default class Swiper extends Component {
   constructor(props) {
     super(props);
 
-    const { cards, children } = this.props;
+    const { cards, children, swiperThreshold } = this.props;
+
+    SWIPE_THRESHOLD = swiperThreshold || SWIPE_THRESHOLD;
 
     this.guid = uuid();
     if (!currentIndex[this.guid]) currentIndex[this.guid] = 0;
