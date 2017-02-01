@@ -185,8 +185,7 @@ export default class Swiper extends Component {
     return false;
   }
   _handleMoveShouldSetPanResponder = (e, gestureState) =>
-    (Math.abs(this.lastX - gestureState.moveX) > 5
-    || Math.abs(this.lastY - gestureState.moveY) > 5);
+    Math.abs(gestureState.dx) > 5 || Math.abs(gestureState.dy) > 5;
 
   _handlePanResponderGrant = () => {
     const { pan } = this.state;
