@@ -11,7 +11,7 @@ import clamp from 'clamp';
 import uuid from 'react-native-uuid';
 import { COLOR, ThemeProvider, Toolbar } from 'react-native-material-ui';
 
-const SWIPE_THRESHOLD = 50;
+const SWIPE_THRESHOLD = 100;
 
 const styles = StyleSheet.create({
   container: {
