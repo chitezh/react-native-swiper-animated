@@ -259,14 +259,7 @@ export default class Swiper extends Component {
         this.props.onFinish();
       }
     }
-
-    // Checks to see if last card.
-    // If props.loop=true, will start again from the first card.
-    if (currentIndex[this.guid] > this.state.cards.length - 1 && this.props.loop) {
-      currentIndex[this.guid] = 0;
-    }
   }
-
 
   _goToPrevCard() {
     this.state.pan.setValue({ x: 0, y: 0 });
@@ -350,13 +343,15 @@ export default class Swiper extends Component {
 
     const dots = [];
     for (let i = 0; i < total; i += 1) {
-      dots.push(<View
-        key={uuid()}
-        style={[styles.dot, {
-          backgroundColor: paginationDotColor || '#C5C5C5',
-        },
-          index >= i ? { backgroundColor: paginationActiveDotColor || '#4D4D4E' } : null]}
-      />);
+      dots.push(
+        <View
+          key={uuid()}
+          style={[styles.dot, {
+            backgroundColor: paginationDotColor || '#C5C5C5',
+          },
+            index >= i ? { backgroundColor: paginationActiveDotColor || '#4D4D4E' } : null]}
+        />
+      );
     }
 
     return (
@@ -469,7 +464,7 @@ export default class Swiper extends Component {
     const [translateX, translateY] = [pan.x, pan.y];
 
     const rotate = pan.x.interpolate({ inputRange: [-200, 0, 200], outputRange: ['-30deg', '0deg', '30deg'] });
-    const opacity = pan.x.interpolate({ inputRange: [-200, 0, 200], outputRange: [0.5, 1, 0.5] });
+    const opacity = pan.x.interpolate({ inputRange: [-200, 0, 200], outputRange: [0.1, 1, 0.1] });
 
     const scale = enter;
 
@@ -487,7 +482,7 @@ export default class Swiper extends Component {
       <Animated.View
         key={uuid()}
         style={[styles.card, animatedCardStyles]}
-        {... this._panResponder.panHandlers}
+        {...this._panResponder.panHandlers}
       >
         {this.props.renderCard ? this.props.renderCard(this.state.card) : this.state.card}
       </Animated.View>
