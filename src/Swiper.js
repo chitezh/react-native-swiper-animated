@@ -280,7 +280,7 @@ export default class Swiper extends Component {
   _animateEntrance() {
     Animated.spring(
       this.state.enter,
-      { toValue: 1, friction: 8 },
+      { toValue: 1, friction: 7 },
     ).start();
   }
 
