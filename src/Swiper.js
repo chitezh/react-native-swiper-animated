@@ -55,6 +55,7 @@ export default class Swiper extends Component {
     children: PropTypes.array,
     style: PropTypes.any,
     loop: PropTypes.bool,
+    swiper: PropTypes.bool,
     swiperThreshold: PropTypes.number,
     allowGestureTermination: PropTypes.bool,
     stack: PropTypes.bool,
@@ -67,6 +68,7 @@ export default class Swiper extends Component {
     renderCard: PropTypes.func,
     onRemoveCard: PropTypes.func,
     dragY: PropTypes.bool,
+    tapToNext: PropTypes.bool,
     showPagination: PropTypes.bool,
     paginationStyle: PropTypes.any,
     paginationLeft: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
@@ -82,6 +84,7 @@ export default class Swiper extends Component {
     cards: [],
     children: [],
     loop: false,
+    swiper: true,
     swiperThreshold: null,
     allowGestureTermination: false,
     stack: false,
@@ -99,6 +102,7 @@ export default class Swiper extends Component {
     renderCard: null,
     style: styles.container,
     dragY: true,
+    tapToNext: false,
     showPagination: true,
     paginationStyle: { container: { paddingLeft: 10, paddingRight: 10 } },
     paginationLeft: <Text>HOME</Text>,
@@ -199,48 +203,59 @@ export default class Swiper extends Component {
 
   _handlePanResponderEnd = (e, { vx, vy, dx, dy }) => {
     const { pan, card } = this.state;
-    const { onRightSwipe, onLeftSwipe, onRemoveCard, onClick } = this.props;
+    const { onRightSwipe, onLeftSwipe, onRemoveCard, onClick, tapToNext } = this.props;
 
     pan.flattenOffset();
     let velocity;
-    if ((dx === 0) && (dy === 0)) {
-      onClick(card);
-    }
     if (vx >= 0) {
       velocity = clamp(vx, 3, 5);
     } else if (vx < 0) {
       velocity = clamp(vx * -1, 3, 5) * -1;
+    }
+    if ((dx === 0) && (dy === 0)) {
+      onClick(card);
+      if(tapToNext) this._advanceState(velocity, vy, true);
     }
 
     const panX = Math.abs(pan.x._value);
     const panY = Math.abs(pan.y._value);
 
     if ((!isNaN(panY) && panX > SWIPE_THRESHOLD) || (!isNaN(panY) && panY > SWIPE_THRESHOLD)) {
-      if (pan.x._value > 0) {
-        onRightSwipe(card);
+      if(pan.y._value > 0) {
+        this._advanceState(velocity, vy);
       } else {
-        onLeftSwipe(card);
+        if (pan.x._value > 0) {
+          onRightSwipe(card);
+        } else {
+          onLeftSwipe(card);
+        }
+
+        this._advanceState(velocity, vy, true);
       }
-
-      this.cardAnimation = Animated.decay(pan, {
-        velocity: { x: velocity, y: vy },
-        deceleration: 0.98,
-      });
-
-      this.cardAnimation.start((status) => {
-        if (status.finished) this._advanceState();
-        else this._resetState();
-
-        this.cardAnimation = null;
-      });
-
       onRemoveCard(currentIndex[this.guid]);
     } else {
       this._resetPan();
     }
   };
 
+  _advanceState(velocity, vy, isNext) {
+    const { pan } = this.state;
+    this.cardAnimation = Animated.decay(pan, {
+      velocity: { x: velocity, y: vy },
+      deceleration: 0.98,
+    });
+
+    this.cardAnimation.start((status) => {
+      if (status.finished) isNext ? this._goToNextCard() : this._goToPrevCard();
+      else this._resetState();
+
+      this.cardAnimation = null;
+    });
+  }
+
   _goToNextCard() {
+    this._resetState();
+
     const total = this.state.cards.length;
     if (currentIndex[this.guid] < total - 1) {
       currentIndex[this.guid] += 1;
@@ -262,9 +277,7 @@ export default class Swiper extends Component {
   }
 
   _goToPrevCard() {
-    this.state.pan.setValue({ x: 0, y: 0 });
-    this.state.enter.setValue(0);
-    this._animateEntrance();
+    this._resetState();
 
     currentIndex[this.guid] -= 1;
 
@@ -280,7 +293,7 @@ export default class Swiper extends Component {
   _animateEntrance() {
     Animated.spring(
       this.state.enter,
-      { toValue: 1, friction: 7 },
+      { toValue: 1, friction: 8 },
     ).start();
   }
 
@@ -297,19 +310,12 @@ export default class Swiper extends Component {
     this._animateEntrance();
   }
 
-  _advanceState() {
-    this.state.pan.setValue({ x: 0, y: 0 });
-    this.state.enter.setValue(0);
-    this._animateEntrance();
-    this._goToNextCard();
-  }
-
   _forceLeftSwipe() {
     this.cardAnimation = Animated.timing(this.state.pan, {
       toValue: { x: -500, y: 0 },
     })
     .start((status) => {
-      if (status.finished) this._advanceState();
+      if (status.finished) this._goToPrevCard();
       else this._resetState();
 
       this.cardAnimation = null;
@@ -321,7 +327,7 @@ export default class Swiper extends Component {
     this.cardAnimation = Animated.timing(this.state.pan, {
       toValue: { x: 500, y: 0 },
     }).start((status) => {
-      if (status.finished) this._advanceState();
+      if (status.finished) this._goToNextCard();
       else this._resetState();
 
       this.cardAnimation = null;
@@ -461,6 +467,7 @@ export default class Swiper extends Component {
 
   renderCard() {
     const { pan, enter } = this.state;
+    const { swiper, renderCard } = this.props;
     const [translateX, translateY] = [pan.x, pan.y];
 
     const rotate = pan.x.interpolate({ inputRange: [-200, 0, 200], outputRange: ['-30deg', '0deg', '30deg'] });
@@ -478,13 +485,15 @@ export default class Swiper extends Component {
       opacity,
     };
 
+    const handler = swiper ? this._panResponder.panHandlers : {};
+
     return (
       <Animated.View
         key={uuid()}
         style={[styles.card, animatedCardStyles]}
-        {...this._panResponder.panHandlers}
+        {...handler}
       >
-        {this.props.renderCard ? this.props.renderCard(this.state.card) : this.state.card}
+        {renderCard ? renderCard(this.state.card) : this.state.card}
       </Animated.View>
     );
   }
