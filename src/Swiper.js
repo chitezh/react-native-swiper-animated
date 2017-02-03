@@ -310,7 +310,7 @@ export default class Swiper extends Component {
     this._animateEntrance();
   }
 
-  _forceLeftSwipe() {
+  forceLeftSwipe() {
     this.cardAnimation = Animated.timing(this.state.pan, {
       toValue: { x: -500, y: 0 },
     })
@@ -323,7 +323,7 @@ export default class Swiper extends Component {
     this.props.onRemoveCard(currentIndex[this.guid]);
   }
 
-  _forceRightSwipe() {
+  forceRightSwipe() {
     this.cardAnimation = Animated.timing(this.state.pan, {
       toValue: { x: 500, y: 0 },
     }).start((status) => {
