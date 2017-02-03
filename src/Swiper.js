@@ -421,6 +421,14 @@ export default class Swiper extends Component {
           inputRange: [0, 1],
           outputRange: [lastOffsetX, offsetX],
         }),
+        bottom: this.state.enter.interpolate({
+          inputRange: [0, 1],
+          outputRange: [lastOffsetY, offsetY],
+        }),
+        right: this.state.enter.interpolate({
+          inputRange: [0, 1],
+          outputRange: [lastOffsetX, offsetX],
+        }),
         opacity: this.state.enter.interpolate({
           inputRange: [0, 1],
           outputRange: [lastOpacity, opacity],
