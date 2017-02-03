@@ -11,7 +11,7 @@ import clamp from 'clamp';
 import uuid from 'react-native-uuid';
 import { COLOR, ThemeProvider, Toolbar } from 'react-native-material-ui';
 
-let SWIPE_THRESHOLD = 100;
+let SWIPE_THRESHOLD = 120;
 
 const styles = StyleSheet.create({
   container: {
@@ -68,6 +68,7 @@ export default class Swiper extends Component {
     renderCard: PropTypes.func,
     onRemoveCard: PropTypes.func,
     dragY: PropTypes.bool,
+    smoothTransition: PropTypes.bool,
     tapToNext: PropTypes.bool,
     showPagination: PropTypes.bool,
     paginationStyle: PropTypes.any,
@@ -102,6 +103,7 @@ export default class Swiper extends Component {
     renderCard: null,
     style: styles.container,
     dragY: true,
+    smoothTransition: false,
     tapToNext: false,
     showPagination: true,
     paginationStyle: { container: { paddingLeft: 10, paddingRight: 10 } },
@@ -189,7 +191,7 @@ export default class Swiper extends Component {
     return false;
   }
   _handleMoveShouldSetPanResponder = (e, gestureState) =>
-    Math.abs(gestureState.dx) > 5 || Math.abs(gestureState.dy) > 5;
+  Math.abs(gestureState.dx) > 5 || Math.abs(gestureState.dy) > 5;
 
   _handlePanResponderGrant = () => {
     const { pan } = this.state;
@@ -203,7 +205,7 @@ export default class Swiper extends Component {
 
   _handlePanResponderEnd = (e, { vx, vy, dx, dy }) => {
     const { pan, card } = this.state;
-    const { onRightSwipe, onLeftSwipe, onRemoveCard, onClick, tapToNext } = this.props;
+    const { onRightSwipe, onLeftSwipe, onRemoveCard, onClick, tapToNext, stack } = this.props;
 
     pan.flattenOffset();
     let velocity;
@@ -214,23 +216,25 @@ export default class Swiper extends Component {
     }
     if ((dx === 0) && (dy === 0)) {
       onClick(card);
-      if(tapToNext) this._advanceState(velocity, vy, true);
+      if (tapToNext) this._advanceState(velocity, vy, true);
     }
 
     const panX = Math.abs(pan.x._value);
     const panY = Math.abs(pan.y._value);
 
     if ((!isNaN(panY) && panX > SWIPE_THRESHOLD) || (!isNaN(panY) && panY > SWIPE_THRESHOLD)) {
-      if(pan.y._value > 0) {
-        this._advanceState(velocity, vy);
-      } else {
-        if (pan.x._value > 0) {
-          onRightSwipe(card);
-        } else {
-          onLeftSwipe(card);
-        }
-
+      if (stack) {
+        // if stack, any direction removes card
         this._advanceState(velocity, vy, true);
+        return;
+      }
+
+      if (pan.x._value > 0) {
+        onRightSwipe(card);
+        this._advanceState(velocity, vy, true);
+      } else {
+        onLeftSwipe(card);
+        this._advanceState(velocity, vy);
       }
       onRemoveCard(currentIndex[this.guid]);
     } else {
@@ -238,19 +242,31 @@ export default class Swiper extends Component {
     }
   };
 
+  _handleDirection(isNext) {
+    if (isNext) this._goToNextCard();
+    else this._goToPrevCard();
+  }
+
   _advanceState(velocity, vy, isNext) {
     const { pan } = this.state;
-    this.cardAnimation = Animated.decay(pan, {
-      velocity: { x: velocity, y: vy },
-      deceleration: 0.98,
-    });
+    const { smoothTransition } = this.props;
 
-    this.cardAnimation.start((status) => {
-      if (status.finished) isNext ? this._goToNextCard() : this._goToPrevCard();
-      else this._resetState();
+    if (smoothTransition) {
+      this._handleDirection(isNext);
+    } else {
+      this.cardAnimation = Animated.decay(pan, {
+        velocity: { x: velocity, y: vy },
+        deceleration: 0.98,
+      });
 
-      this.cardAnimation = null;
-    });
+      this.cardAnimation.start((status) => {
+        if (status.finished) {
+          this._handleDirection(isNext);
+        } else this._resetState();
+
+        this.cardAnimation = null;
+      });
+    }
   }
 
   _goToNextCard() {
@@ -356,7 +372,7 @@ export default class Swiper extends Component {
             backgroundColor: paginationDotColor || '#C5C5C5',
           },
             index >= i ? { backgroundColor: paginationActiveDotColor || '#4D4D4E' } : null]}
-        />
+        />,
       );
     }
 
@@ -427,9 +443,10 @@ export default class Swiper extends Component {
           inputRange: [-200, 0, 200],
           outputRange: ['-30deg', '0deg', '30deg'],
         });
-        // const opacity = pan.x.interpolate({
-        //   inputRange: [-200, 0, 200],
-        //   outputRange: [0.5, 1, 0.5] });
+        const stackOpacity = pan.x.interpolate({
+          inputRange: [-200, 0, 200],
+          outputRange: [0.5, 1, 0.5],
+        });
 
         const animatedCardStyles = {
           ...style,
@@ -444,6 +461,7 @@ export default class Swiper extends Component {
               }),
             },
           ],
+          opacity: stackOpacity,
         };
 
         return (
@@ -467,11 +485,17 @@ export default class Swiper extends Component {
 
   renderCard() {
     const { pan, enter } = this.state;
-    const { swiper, renderCard } = this.props;
+    const { swiper, renderCard, smoothTransition } = this.props;
     const [translateX, translateY] = [pan.x, pan.y];
 
-    const rotate = pan.x.interpolate({ inputRange: [-200, 0, 200], outputRange: ['-30deg', '0deg', '30deg'] });
-    const opacity = pan.x.interpolate({ inputRange: [-200, 0, 200], outputRange: [0.1, 1, 0.1] });
+    const rotate = pan.x.interpolate({
+      inputRange: [-200, 0, 200],
+      outputRange: ['-30deg', '0deg', '30deg'],
+    });
+    const opacity = smoothTransition ? 1 : pan.x.interpolate({
+      inputRange: [-200, 0, 200],
+      outputRange: [0.1, 1, 0.1],
+    });
 
     const scale = enter;
 
