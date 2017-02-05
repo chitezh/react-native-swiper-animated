@@ -42,7 +42,8 @@ export default () => <Swiper
   paginationRight={''}
   smoothTransition
   stack
-  loop
+  dragDownToBack
+  dragY={false}
 >
   <View style={styles.slide1}>
     <Text style={styles.text}>Hello Swiper</Text>

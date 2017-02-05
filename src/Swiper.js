@@ -74,6 +74,7 @@ export default class Swiper extends Component {
     dragY: PropTypes.bool,
     smoothTransition: PropTypes.bool,
     tapToNext: PropTypes.bool,
+    dragDownToBack: PropTypes.bool,
     showPagination: PropTypes.bool,
     paginationStyle: PropTypes.any,
     paginationLeft: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
@@ -108,6 +109,7 @@ export default class Swiper extends Component {
     dragY: true,
     smoothTransition: false,
     tapToNext: false,
+    dragDownToBack: false,
     showPagination: true,
     paginationStyle: { container: { paddingLeft: 10, paddingRight: 10 } },
     paginationLeft: <Text>HOME</Text>,
@@ -182,6 +184,7 @@ export default class Swiper extends Component {
       this.setState({
         cards: [...nextProps.cards],
         card: nextProps.cards[0],
+        card2: nextProps.cards[1],
       });
     }
   }
@@ -198,6 +201,7 @@ export default class Swiper extends Component {
     this.lastY = gestureState.moveY;
     return false;
   }
+
   _handleMoveShouldSetPanResponder = (e, gestureState) =>
   Math.abs(gestureState.dx) > 5 || Math.abs(gestureState.dy) > 5;
 
@@ -208,14 +212,24 @@ export default class Swiper extends Component {
   };
 
   _handlePanResponderMove = () => Animated.event([
-    null, { dx: this.state.pan.x, dy: this.props.dragY ? this.state.pan.y : 0 },
+    null, { dx: this.state.pan.x, dy: this.props.dragY ? this.state.pan.y : new Animated.Value(0) },
   ]);
 
   _handlePanResponderEnd = (e, { vx, vy, dx, dy }) => {
     const { pan, card } = this.state;
-    const { onRightSwipe, onLeftSwipe, onRemoveCard, onClick, tapToNext, stack } = this.props;
-
     pan.flattenOffset();
+
+    const {
+      onRightSwipe,
+      onLeftSwipe,
+      onRemoveCard,
+      onClick,
+      tapToNext,
+      stack,
+      dragDownToBack,
+    } = this.props;
+
+
     let velocity;
     if (vx >= 0) {
       velocity = clamp(vx, 3, 5);
@@ -225,6 +239,11 @@ export default class Swiper extends Component {
     if ((dx === 0) && (dy === 0)) {
       onClick(card);
       if (tapToNext) this._advanceState(velocity, vy, true);
+    }
+
+    if (dragDownToBack && Math.abs(dx) < 10 && dy > SWIPE_THRESHOLD - 40) {
+      this._advanceState(velocity, vy);
+      return;
     }
 
     const panX = Math.abs(pan.x._value);
@@ -251,26 +270,39 @@ export default class Swiper extends Component {
   };
 
   _handleDirection(isNext) {
+    this._resetState();
     if (this.props.stack) {
-      this._resetState();
+      let newIdx;
+      let newIdx2;
+      if (this.props.dragDownToBack && !isNext) {
+        if (currentIndex[this.guid] > 0) {
+          newIdx = currentIndex[this.guid] -= 1;
+          newIdx2 = newIdx + 1;
 
-      const total = this.state.cards.length;
-      const newIdx = currentIndex[this.guid] += 1;
-      const newIdx2 = newIdx + 1;
-
-      if (newIdx < total) {
-        this.setState({
-          card: this.state.cards[newIdx],
-          card2: this.state.cards[newIdx2],
-        });
-      } else if (this.props.loop) {
-        currentIndex[this.guid] = 0;
-        this.setState({
-          card: this.state.cards[0],
-          card2: this.state.cards[1],
-        });
+          this.setState({
+            card: this.state.cards[newIdx],
+            card2: this.state.cards[newIdx2],
+          });
+        }
       } else {
-        this.props.onFinish();
+        const total = this.state.cards.length;
+        newIdx = currentIndex[this.guid] += 1;
+        newIdx2 = newIdx + 1;
+
+        if (newIdx < total) {
+          this.setState({
+            card: this.state.cards[newIdx],
+            card2: this.state.cards[newIdx2],
+          });
+        } else if (this.props.loop) {
+          currentIndex[this.guid] = 0;
+          this.setState({
+            card: this.state.cards[0],
+            card2: this.state.cards[1],
+          });
+        } else {
+          this.props.onFinish();
+        }
       }
     } else if (isNext) this._goToNextCard();
     else this._goToPrevCard();
@@ -299,8 +331,6 @@ export default class Swiper extends Component {
   }
 
   _goToNextCard() {
-    this._resetState();
-
     const total = this.state.cards.length;
     if (currentIndex[this.guid] < total - 1) {
       currentIndex[this.guid] += 1;
@@ -321,8 +351,6 @@ export default class Swiper extends Component {
   }
 
   _goToPrevCard() {
-    this._resetState();
-
     currentIndex[this.guid] -= 1;
 
     if (currentIndex[this.guid] < 0) {
@@ -331,7 +359,6 @@ export default class Swiper extends Component {
 
     this.setState({
       card: this.state.cards[currentIndex[this.guid]],
-      card2: this.state.cards[currentIndex[this.guid]],
     });
   }
 
@@ -434,7 +461,7 @@ export default class Swiper extends Component {
 
     const rotate = pan.x.interpolate({ inputRange: [-200, 0, 200], outputRange: ['-30deg', '0deg', '30deg'] });
     const opacity = smoothTransition ?
-      1 : pan.x.interpolate({ inputRange: [-200, 0, 200], outputRange: [0.5, 1, 0.5] });
+      1 : pan.x.interpolate({ inputRange: [-200, 0, 200], outputRange: [0.7, 1, 0.7] });
 
     const scale = enter;
 
