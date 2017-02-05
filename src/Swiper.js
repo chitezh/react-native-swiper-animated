@@ -276,7 +276,8 @@ export default class Swiper extends Component {
       let newIdx2;
       if (this.props.dragDownToBack && !isNext) {
         if (currentIndex[this.guid] > 0) {
-          newIdx = currentIndex[this.guid] -= 1;
+          currentIndex[this.guid] -= 1;
+          newIdx = currentIndex[this.guid];
           newIdx2 = newIdx + 1;
 
           this.setState({
@@ -286,7 +287,8 @@ export default class Swiper extends Component {
         }
       } else {
         const total = this.state.cards.length;
-        newIdx = currentIndex[this.guid] += 1;
+        currentIndex[this.guid] += 1;
+        newIdx = currentIndex[this.guid];
         newIdx2 = newIdx + 1;
 
         if (newIdx < total) {
@@ -461,7 +463,7 @@ export default class Swiper extends Component {
 
     const rotate = pan.x.interpolate({ inputRange: [-200, 0, 200], outputRange: ['-30deg', '0deg', '30deg'] });
     const opacity = smoothTransition ?
-      1 : pan.x.interpolate({ inputRange: [-200, 0, 200], outputRange: [0.7, 1, 0.7] });
+      1 : pan.x.interpolate({ inputRange: [-200, 0, 200], outputRange: [0.9, 1, 0.9] });
 
     const scale = enter;
 
