@@ -459,7 +459,8 @@ export default class Swiper extends Component {
         {(this.state.card) === undefined ?
           (<View />)
           :
-          (<View>
+          (
+            <View>
               <Animated.View
                 style={[animatedCardStyles2,
                   topCardStyle,
