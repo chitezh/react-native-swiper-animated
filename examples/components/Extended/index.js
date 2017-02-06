@@ -36,16 +36,21 @@ const styles = {
   buttonContainer: {
     flexDirection: 'row',
     position: 'absolute',
+    justifyContent: 'space-between',
     bottom: 0,
     left: 0,
     right: 0,
+    padding: 10,
   },
-  prevBtn: {
+  btn: {
     height: 45,
     width: 100,
-    backgroundColor: 'grey',
+    backgroundColor: 'black',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  btnText: {
+    color: '#FFF',
   },
 };
 
@@ -58,12 +63,12 @@ export default class Extended extends PureComponent {
   }
 
   next = () => {
-    this.swiper.forceLeftSwipe();
+    this.swiper.forceRightSwipe();
   }
 
   render() {
     return (
-      <View>
+      <View style={{flex: 1}}>
         <Swiper
           ref={(swiper) => {
             this.swiper = swiper;
@@ -84,11 +89,11 @@ export default class Extended extends PureComponent {
           </View>
         </Swiper>
         <View style={styles.buttonContainer}>
-          <TouchableOpacity onPress={this.prev} style={styles.prevBtn}>
-            <Text>PREVIOUS</Text>
+          <TouchableOpacity onPress={this.prev} style={styles.btn}>
+            <Text style={styles.btnText}>PREVIOUS</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={this.next} style={styles.prevBtn}>
-            <Text>NEXT</Text>
+          <TouchableOpacity onPress={this.next} style={styles.btn}>
+            <Text style={styles.btnText}>NEXT</Text>
           </TouchableOpacity>
         </View>
       </View>

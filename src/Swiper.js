@@ -271,6 +271,7 @@ export default class Swiper extends Component {
 
   _handleDirection(isNext) {
     this._resetState();
+
     if (this.props.stack) {
       let newIdx;
       let newIdx2;
@@ -395,8 +396,8 @@ export default class Swiper extends Component {
       toValue: { x: -500, y: 0 },
     })
     .start((status) => {
+      this._resetState();
       if (status.finished) this._goToPrevCard();
-      else this._resetState();
 
       this.cardAnimation = null;
     });
@@ -407,8 +408,8 @@ export default class Swiper extends Component {
     this.cardAnimation = Animated.timing(this.state.pan, {
       toValue: { x: 500, y: 0 },
     }).start((status) => {
+      this._resetState();
       if (status.finished) this._goToNextCard();
-      else this._resetState();
 
       this.cardAnimation = null;
     });
