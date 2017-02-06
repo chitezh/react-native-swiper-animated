@@ -11,3 +11,4 @@ build/Release
 node_modules
 res
 examples
+**/__tests__

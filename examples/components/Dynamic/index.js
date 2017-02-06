@@ -6,28 +6,27 @@ import {
 import Swiper from 'react-native-swiper-animated';
 
 const styles = {
-  wrapper: {},
+  wrapper: {
+    backgroundColor: '#009688',
+  },
   slide1: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#9DD6EB',
+    backgroundColor: '#e91e63',
   },
-
   slide2: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#97CAE5',
+    backgroundColor: '#673ab7',
   },
-
   slide3: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#92BBD9',
+    backgroundColor: '#3f51b5',
   },
-
   text: {
     color: '#fff',
     fontSize: 30,
@@ -49,7 +48,14 @@ export default class extends Component {
 
   render() {
     return (
-      <Swiper showsButtons>
+      <Swiper
+        style={styles.wrapper}
+        paginationStyle={{ container: { backgroundColor: 'transparent' } }}
+        paginationLeft={''}
+        paginationRight={''}
+        smoothTransition
+        loop
+      >
         {this.state.items.map(item => (
           <View key={Math.Random()} style={item.css}>
             <Text style={styles.text}>{item.title}</Text>

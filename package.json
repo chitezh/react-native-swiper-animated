@@ -67,6 +67,7 @@
     "extends": "airbnb",
     "rules": {
       "prefer-template": 0,
+      "no-console": 0,
       "import/no-extraneous-dependencies": 0,
       "no-underscore-dangle": 0,
       "react/forbid-prop-types": 0,

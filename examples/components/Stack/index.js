@@ -7,7 +7,7 @@ import Swiper from 'react-native-swiper-animated';
 
 const styles = {
   wrapper: {
-    backgroundColor: "#009688",
+    backgroundColor: '#009688',
     flex: 1,
   },
   slide1: {
