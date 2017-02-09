@@ -7,6 +7,8 @@ import {
   Animated,
   PanResponder,
   Dimensions,
+  Platform,
+  BackAndroid,
 } from 'react-native';
 import clamp from 'clamp';
 import uuid from 'react-native-uuid';
@@ -75,6 +77,7 @@ export default class Swiper extends Component {
     smoothTransition: PropTypes.bool,
     tapToNext: PropTypes.bool,
     dragDownToBack: PropTypes.bool,
+    backPressToBack: PropTypes.bool,
     showPagination: PropTypes.bool,
     paginationStyle: PropTypes.any,
     paginationLeft: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
@@ -110,6 +113,7 @@ export default class Swiper extends Component {
     smoothTransition: false,
     tapToNext: false,
     dragDownToBack: false,
+    backPressToBack: true,
     showPagination: true,
     paginationStyle: { container: { paddingLeft: 10, paddingRight: 10 } },
     paginationLeft: <Text>HOME</Text>,
@@ -156,6 +160,7 @@ export default class Swiper extends Component {
     this._handlePanResponderGrant = this._handlePanResponderGrant.bind(this);
     this._handlePanResponderMove = this._handlePanResponderMove.bind(this);
     this._handlePanResponderEnd = this._handlePanResponderEnd.bind(this);
+    this._handleBackPress = this._handleBackPress.bind(this);
   }
 
   componentWillMount() {
@@ -171,6 +176,9 @@ export default class Swiper extends Component {
 
   componentDidMount() {
     this._animateEntrance();
+    if (Platform.OS === 'android' && this.props.backPressToBack) {
+      BackAndroid.addEventListener('hardwareBackPress', this._handleBackPress);
+    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -186,6 +194,12 @@ export default class Swiper extends Component {
         card: nextProps.cards[0],
         card2: nextProps.cards[1],
       });
+    }
+  }
+
+  componentWillUnmount() {
+    if (Platform.OS === 'android' && this.props.backPressToBack) {
+      BackAndroid.removeEventListener('hardwareBackPress');
     }
   }
 
@@ -241,7 +255,7 @@ export default class Swiper extends Component {
       if (tapToNext) this._advanceState(velocity, vy, true);
     }
 
-    if (dragDownToBack && Math.abs(dx) < 10 && dy > SWIPE_THRESHOLD - 40) {
+    if (dragDownToBack && Math.abs(dx) < 20 && dy > SWIPE_THRESHOLD - 30) {
       this._advanceState(velocity, vy);
       return;
     }
@@ -275,7 +289,7 @@ export default class Swiper extends Component {
     if (this.props.stack) {
       let newIdx;
       let newIdx2;
-      if (this.props.dragDownToBack && !isNext) {
+      if ((this.props.dragDownToBack || this.props.backPressToBack) && !isNext) {
         if (currentIndex[this.guid] > 0) {
           currentIndex[this.guid] -= 1;
           newIdx = currentIndex[this.guid];
@@ -397,7 +411,7 @@ export default class Swiper extends Component {
     })
     .start((status) => {
       this._resetState();
-      if (status.finished) this._goToPrevCard();
+      if (status.finished) this._handleDirection(false);
 
       this.cardAnimation = null;
     });
@@ -409,11 +423,19 @@ export default class Swiper extends Component {
       toValue: { x: 500, y: 0 },
     }).start((status) => {
       this._resetState();
-      if (status.finished) this._goToNextCard();
+      if (status.finished) this._handleDirection(true);
 
       this.cardAnimation = null;
     });
     this.props.onRemoveCard(currentIndex[this.guid]);
+  }
+
+  _handleBackPress() {
+    if (currentIndex[this.guid] === 0) {
+      return false;
+    }
+    this.forceLeftSwipe();
+    return true;
   }
 
   renderPagination() {
