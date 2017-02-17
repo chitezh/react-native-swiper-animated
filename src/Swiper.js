@@ -55,8 +55,7 @@ const uiTheme = {
   },
 };
 
-export default class Swiper extends Component {
-
+export default class SwiperAnimated extends Component {
   static propTypes = {
     cards: PropTypes.array,
     children: PropTypes.array,
