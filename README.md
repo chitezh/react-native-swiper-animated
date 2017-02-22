@@ -1,12 +1,22 @@
 # react-native-swiper-animated
 
-
+Tinder like animations swiper for React Native
 
 ### Installation
 
 ```bash
 $ npm i react-native-swiper-animated --save
 ```
+
+### Shots
+
+<img src="https://raw.githubusercontent.com/chitezh/react-native-swiper-animated/master/examples/shots/basic.gif" width="280">
+<img src="https://raw.githubusercontent.com/chitezh/react-native-swiper-animated/master/examples/shots/stack.gif" width="280">
+<img src="https://raw.githubusercontent.com/chitezh/react-native-swiper-animated/master/examples/shots/extended.gif" width="280">
+
+
+Basic, Stack and Extended examples shots
+
 
 ### Basic Usage
 
