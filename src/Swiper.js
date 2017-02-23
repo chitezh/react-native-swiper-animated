@@ -57,7 +57,6 @@ const uiTheme = {
 
 export default class SwiperAnimated extends Component {
   static propTypes = {
-    cards: PropTypes.array,
     children: PropTypes.array,
     index: PropTypes.number,
     style: PropTypes.any,
@@ -89,7 +88,6 @@ export default class SwiperAnimated extends Component {
   };
 
   static defaultProps = {
-    cards: [],
     children: [],
     index: 0,
     loop: false,
@@ -130,7 +128,7 @@ export default class SwiperAnimated extends Component {
   constructor(props) {
     super(props);
 
-    const { cards, children, swiperThreshold, index } = this.props;
+    const { children, swiperThreshold, index } = this.props;
 
     SWIPE_THRESHOLD = swiperThreshold || SWIPE_THRESHOLD;
 
@@ -142,24 +140,15 @@ export default class SwiperAnimated extends Component {
       pan2: new Animated.ValueXY(),
       enter: new Animated.Value(0.8),
       fadeAnim: new Animated.Value(0.8),
-      cards: cards.length ? [...cards] : [...children],
-      card: cards.length ?
-        cards[currentIndex[this.guid]] : children[currentIndex[this.guid]],
-      card2: cards.length ?
-        cards[currentIndex[this.guid] + 1] : children[currentIndex[this.guid] + 1],
+      cards: [...children],
+      card: children[currentIndex[this.guid]],
+      card2: children[currentIndex[this.guid] + 1],
     };
 
     this.lastX = 0;
     this.lastY = 0;
 
     this.cardAnimation = null;
-
-    this._handleStartShouldSetPanResponder = this._handleStartShouldSetPanResponder.bind(this);
-    this._handleMoveShouldSetPanResponder = this._handleMoveShouldSetPanResponder.bind(this);
-    this._handlePanResponderGrant = this._handlePanResponderGrant.bind(this);
-    this._handlePanResponderMove = this._handlePanResponderMove.bind(this);
-    this._handlePanResponderEnd = this._handlePanResponderEnd.bind(this);
-    this._handleBackPress = this._handleBackPress.bind(this);
   }
 
   componentWillMount() {
@@ -174,29 +163,15 @@ export default class SwiperAnimated extends Component {
   }
 
   componentDidMount() {
+    this.isComponentMounted = true;
     this._animateEntrance();
     if (Platform.OS === 'android' && this.props.backPressToBack) {
       BackAndroid.addEventListener('hardwareBackPress', this._handleBackPress);
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.cards !== this.props.cards) {
-      if (this.cardAnimation) {
-        this.cardAnimation.stop();
-        this.cardAnimation = null;
-      }
-
-      currentIndex[this.guid] = 0;
-      this.setState({
-        cards: [...nextProps.cards],
-        card: nextProps.cards[0],
-        card2: nextProps.cards[1],
-      });
-    }
-  }
-
   componentWillUnmount() {
+    this.isComponentMounted = false;
     if (Platform.OS === 'android' && this.props.backPressToBack) {
       BackAndroid.removeEventListener('hardwareBackPress');
     }
@@ -205,9 +180,7 @@ export default class SwiperAnimated extends Component {
   /**
    * Returns current card object
    */
-  getCurrentCard() {
-    return this.state.cards[currentIndex[this.guid]];
-  }
+  getCurrentCard = () => this.state.cards[currentIndex[this.guid]];
 
   _handleStartShouldSetPanResponder = (e, gestureState) => {
     this.lastX = gestureState.moveX;
@@ -282,7 +255,7 @@ export default class SwiperAnimated extends Component {
     }
   };
 
-  _handleDirection(isNext) {
+  _handleDirection = (isNext) => {
     this._resetState();
 
     if (this.props.stack) {
@@ -324,7 +297,7 @@ export default class SwiperAnimated extends Component {
     else this._goToPrevCard();
   }
 
-  _advanceState(velocity, vy, isNext) {
+  _advanceState = (velocity, vy, isNext) => {
     const { pan } = this.state;
     const { smoothTransition } = this.props;
 
@@ -346,7 +319,7 @@ export default class SwiperAnimated extends Component {
     }
   }
 
-  _goToNextCard() {
+  _goToNextCard = () => {
     const total = this.state.cards.length;
     if (currentIndex[this.guid] < total - 1) {
       currentIndex[this.guid] += 1;
@@ -366,7 +339,7 @@ export default class SwiperAnimated extends Component {
     }
   }
 
-  _goToPrevCard() {
+  _goToPrevCard = () => {
     currentIndex[this.guid] -= 1;
 
     if (currentIndex[this.guid] < 0) {
@@ -378,7 +351,7 @@ export default class SwiperAnimated extends Component {
     });
   }
 
-  _animateEntrance() {
+  _animateEntrance = () => {
     Animated.timing(
       this.state.fadeAnim,
       { toValue: 1 },
@@ -390,21 +363,21 @@ export default class SwiperAnimated extends Component {
     ).start();
   }
 
-  _resetPan() {
+  _resetPan = () => {
     Animated.spring(this.state.pan, {
       toValue: { x: 0, y: 0 },
       friction: 4,
     }).start();
   }
 
-  _resetState() {
+  _resetState = () => {
     this.state.pan.setValue({ x: 0, y: 0 });
     this.state.enter.setValue(0);
     this.state.fadeAnim.setValue(0.8);
     this._animateEntrance();
   }
 
-  forceLeftSwipe() {
+  forceLeftSwipe = () => {
     this.cardAnimation = Animated.timing(this.state.pan, {
       toValue: { x: -500, y: 0 },
     })
@@ -417,7 +390,7 @@ export default class SwiperAnimated extends Component {
     this.props.onRemoveCard(currentIndex[this.guid]);
   }
 
-  forceRightSwipe() {
+  forceRightSwipe = () => {
     this.cardAnimation = Animated.timing(this.state.pan, {
       toValue: { x: 500, y: 0 },
     }).start((status) => {
@@ -429,7 +402,7 @@ export default class SwiperAnimated extends Component {
     this.props.onRemoveCard(currentIndex[this.guid]);
   }
 
-  _handleBackPress() {
+  _handleBackPress = () => {
     if (currentIndex[this.guid] === 0) {
       return false;
     }
@@ -437,7 +410,7 @@ export default class SwiperAnimated extends Component {
     return true;
   }
 
-  renderPagination() {
+  renderPagination = () => {
     const total = this.state.cards.length;
     const index = currentIndex[this.guid];
     const {
@@ -477,7 +450,7 @@ export default class SwiperAnimated extends Component {
   /**
    * Renders the cards as a stack with props.stackDepth cards deep.
    */
-  renderStack() {
+  renderStack = () => {
     const { pan, enter } = this.state;
     const { swiper, stackOffsetY, smoothTransition } = this.props;
 
@@ -531,7 +504,7 @@ export default class SwiperAnimated extends Component {
     );
   }
 
-  renderCard() {
+  renderCard = () => {
     const { pan, enter } = this.state;
     const { swiper, renderCard, smoothTransition } = this.props;
     const [translateX, translateY] = [pan.x, pan.y];
