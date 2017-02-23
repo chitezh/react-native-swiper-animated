@@ -256,6 +256,8 @@ export default class SwiperAnimated extends Component {
   };
 
   _handleDirection = (isNext) => {
+    if (!this.isComponentMounted) { return; }
+
     this._resetState();
 
     if (this.props.stack) {
