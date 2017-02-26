@@ -108,6 +108,9 @@ $ react-native run-android
 | style | {...} | `style` | See default style in source. |
 | swiperThreshold | 120 | `number` | Used to set swiper distance before transition |
 | backPressToBack | true | `bool` | Set to `false` to disable previous card nagivation on back press   |
+| stackOffsetY | 3 | `number` | Set vertical offset   |
+| stackDepth | 5 | `number` | Set number of cards to display in card stack   |
+| scaleOthers | true | `bool` | Set to `false` to disable scaling of cards below the top card |
 [see more](https://github.com/chitezh/react-native-swiper-animated/blob/master/src/Swiper.js#L59)
 
 
