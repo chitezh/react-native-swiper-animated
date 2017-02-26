@@ -145,7 +145,7 @@ export default class SwiperAnimated extends Component {
     this.state = {
       pan: new Animated.ValueXY(),
       pan2: new Animated.ValueXY(),
-      enter: new Animated.Value(0.8),
+      enter: new Animated.Value(0.9),
       fadeAnim: new Animated.Value(0.8),
       cards: [...children],
       card: children[this.currentIndex[this.guid]],
