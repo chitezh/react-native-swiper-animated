@@ -43,7 +43,7 @@ export default () => <Swiper
   smoothTransition
   stack
   dragDownToBack
-  dragY={false}
+  dragY
 >
   <View style={styles.slide1}>
     <Text style={styles.text}>Hello Swiper</Text>
@@ -53,5 +53,14 @@ export default () => <Swiper
   </View>
   <View style={styles.slide3}>
     <Text style={styles.text}>And simple</Text>
+  </View>
+  <View style={styles.slide2}>
+    <Text style={styles.text}>This is a test slide</Text>
+  </View>
+  <View style={styles.slide1}>
+    <Text style={styles.text}>Isn&apos;t this just mind blowing?</Text>
+  </View>
+  <View style={styles.slide3}>
+    <Text style={styles.text}>Check it Out</Text>
   </View>
 </Swiper>;
