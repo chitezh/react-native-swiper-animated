@@ -373,8 +373,10 @@ export default class SwiperAnimated extends Component {
   }
 
   resetState = () => {
+    const { stack, smoothTransition } = this.props;
+
     this.state.pan.setValue({ x: 0, y: 0 });
-    this.state.enter.setValue(0);
+    this.state.enter.setValue(stack && smoothTransition ? 0.98 : 0);
     this.state.fadeAnim.setValue(0.8);
     this.animateEntrance();
   }
@@ -467,7 +469,7 @@ export default class SwiperAnimated extends Component {
    */
   renderStack = () => {
     const { swiper, stackOffsetY: offsetY, smoothTransition, stackDepth, scaleOthers } = this.props;
-    const { cards, pan } = this.state;
+    const { cards, pan, enter } = this.state;
 
     const reversedCards = cards
         .slice(this.currentIndex[this.guid], this.currentIndex[this.guid] + stackDepth)
@@ -488,6 +490,7 @@ export default class SwiperAnimated extends Component {
       let rotate = '0deg';
       let panHandlers = {};
       let scaleX = 1;
+      let scale = 1;
       let opacity = 1;
 
       if (i === 0 && count > stackDepth) {
@@ -513,12 +516,13 @@ export default class SwiperAnimated extends Component {
         first card!
         add panHandlers and other transforms
         =============================================================================== */
-        rotate = pan.x.interpolate({ inputRange: [-200, 0, 200], outputRange: ['-30deg', '0deg', '30deg'] });
+        rotate = pan.x.interpolate({ inputRange: [-200, 0, 200], outputRange: ['-10deg', '0deg', '10deg'] });
         opacity = smoothTransition ?
               1 : pan.x.interpolate({ inputRange: [-200, 0, 200], outputRange: [0.9, 1, 0.9] });
         translateY = pan.y;
         translateX = pan.x;
         panHandlers = swiper ? this.panResponder.panHandlers : {};
+        scale = enter;
       } else {
         /* ===============================================================================
         cards between first and last!
@@ -548,6 +552,7 @@ export default class SwiperAnimated extends Component {
           { rotate },
           { translateX },
           { scaleX: scaleOthers ? scaleX : 1 },
+          { scale },
         ],
       };
 
