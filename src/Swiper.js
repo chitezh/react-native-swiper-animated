@@ -361,7 +361,7 @@ export default class SwiperAnimated extends Component {
 
     Animated.spring(
       this.state.enter,
-      { toValue: 1, friction: 8 },
+      { toValue: 1, tension: 10 },
     ).start();
   }
 
@@ -376,7 +376,7 @@ export default class SwiperAnimated extends Component {
     const { stack, smoothTransition } = this.props;
 
     this.state.pan.setValue({ x: 0, y: 0 });
-    this.state.enter.setValue(stack && smoothTransition ? 0.98 : 0);
+    this.state.enter.setValue(stack && smoothTransition ? 0.985 : 0);
     this.state.fadeAnim.setValue(0.8);
     this.animateEntrance();
   }
@@ -542,8 +542,8 @@ export default class SwiperAnimated extends Component {
       const animatedCardStyles = {
         position: 'absolute',
         top: 0,
-        left: 10,
-        right: 10,
+        left: 0,
+        right: 0,
         borderRadius: 10,
         height: deviceHeight - 100 - offsetY,
         opacity,
