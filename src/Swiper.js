@@ -361,7 +361,7 @@ export default class SwiperAnimated extends Component {
 
     Animated.spring(
       this.state.enter,
-      { toValue: 1, tension: 10 },
+      { toValue: 1, tension: 20 },
     ).start();
   }
 
@@ -376,7 +376,7 @@ export default class SwiperAnimated extends Component {
     const { stack, smoothTransition } = this.props;
 
     this.state.pan.setValue({ x: 0, y: 0 });
-    this.state.enter.setValue(stack && smoothTransition ? 0.985 : 0);
+    this.state.enter.setValue(stack || smoothTransition ? 0.985 : 0);
     this.state.fadeAnim.setValue(0.8);
     this.animateEntrance();
   }
@@ -490,8 +490,7 @@ export default class SwiperAnimated extends Component {
       let rotate = '0deg';
       let panHandlers = {};
       let scaleX = 1;
-      let scale = 1;
-      let opacity = 1;
+      let scaleY = 1;
 
       if (i === 0 && count > stackDepth) {
         /* ===============================================================================
@@ -516,13 +515,12 @@ export default class SwiperAnimated extends Component {
         first card!
         add panHandlers and other transforms
         =============================================================================== */
-        rotate = pan.x.interpolate({ inputRange: [-200, 0, 200], outputRange: ['-10deg', '0deg', '10deg'] });
-        opacity = smoothTransition ?
-              1 : pan.x.interpolate({ inputRange: [-200, 0, 200], outputRange: [0.9, 1, 0.9] });
+        rotate = pan.x.interpolate({ inputRange: [-200, 0, 200], outputRange: ['-8deg', '0deg', '8deg'] });
         translateY = pan.y;
         translateX = pan.x;
         panHandlers = swiper ? this.panResponder.panHandlers : {};
-        scale = enter;
+        if(pan.y === 0)
+          translateY = enter.interpolate({ inputRange: [0.7, 1], outputRange: [0, 30] });
       } else {
         /* ===============================================================================
         cards between first and last!
@@ -537,6 +535,8 @@ export default class SwiperAnimated extends Component {
           outputRange: [cardScaleEnd, cardScaleX, cardScaleEnd],
           extrapolate: 'clamp',
         });
+        if(pan.y === 0)
+          translateY = enter.interpolate({ inputRange: [0.5, 1], outputRange: [0, 30] });
       }
 
       const animatedCardStyles = {
@@ -546,13 +546,12 @@ export default class SwiperAnimated extends Component {
         right: 0,
         borderRadius: 10,
         height: deviceHeight - 100 - offsetY,
-        opacity,
         transform: [
           { translateY },
           { rotate },
           { translateX },
           { scaleX: scaleOthers ? scaleX : 1 },
-          { scale },
+          { scaleY },
         ],
       };
 
