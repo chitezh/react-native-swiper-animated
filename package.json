@@ -1,6 +1,6 @@
 {
   "name": "react-native-swiper-animated",
-  "version": "0.7.3",
+  "version": "0.8.0",
   "description": "Tinder-like swiper for react-native",
   "main": "index.js",
   "scripts": {
