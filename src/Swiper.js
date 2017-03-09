@@ -311,7 +311,7 @@ export default class SwiperAnimated extends PureComponent {
     } else {
       this.cardAnimation = Animated.decay(this.pan, {
         velocity: { x: velocity, y: vy },
-        deceleration: 0.98,
+        deceleration: 0.983,
       });
 
       this.cardAnimation.start((status) => {
