@@ -68,7 +68,7 @@ export default class Extended extends PureComponent {
 
   render() {
     return (
-      <View style={{flex: 1}}>
+      <View style={{ flex: 1 }}>
         <Swiper
           ref={(swiper) => {
             this.swiper = swiper;
