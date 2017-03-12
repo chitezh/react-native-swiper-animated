@@ -9,12 +9,11 @@ import {
     Dimensions,
     Platform,
     BackAndroid,
-    TouchableOpacity,
 } from 'react-native';
 import clamp from 'clamp';
 
 import uuid from 'react-native-uuid';
-import { COLOR, ThemeProvider, Toolbar } from 'react-native-material-ui';
+import { COLOR, ThemeProvider, Toolbar, RippleFeedback } from 'react-native-material-ui';
 
 let SWIPE_THRESHOLD = 120;
 
@@ -52,6 +51,8 @@ const uiTheme = {
   toolbar: {
     container: {
       height: 50,
+      backgroundColor: 'transparent',
+      elevation: 0,
     },
   },
 };
@@ -143,6 +144,8 @@ export default class SwiperAnimated extends PureComponent {
     if (!this.currentIndex[this.guid]) this.currentIndex[this.guid] = index;
 
     this.pan = new Animated.ValueXY();
+    this.valueX = 0;
+    this.valueY = 0;
 
     this.enter = new Animated.Value(0.9);
     this.fadeAnim = new Animated.Value(0.8);
@@ -174,8 +177,8 @@ export default class SwiperAnimated extends PureComponent {
     if (Platform.OS === 'android' && this.props.backPressToBack) {
       BackAndroid.addEventListener('hardwareBackPress', this.handleBackPress);
     }
-    this.pan.x.addListener(({ value }) => { this._valueX = value; });
-    this.pan.y.addListener(({ value }) => { this._valueY = value; });
+    this.pan.x.addListener(({ value }) => { this.valueX = value; });
+    this.pan.y.addListener(({ value }) => { this.valueY = value; });
   }
 
   componentWillUnmount() {
@@ -187,9 +190,6 @@ export default class SwiperAnimated extends PureComponent {
     this.pan.y.removeAllListeners();
   }
 
-    /**
-     * Returns current card object
-     */
   getCurrentCard = () => this.props.children[this.currentIndex[this.guid]];
 
   handleStartShouldSetPanResponder = (e, gestureState) => {
@@ -202,9 +202,9 @@ export default class SwiperAnimated extends PureComponent {
     Math.abs(gestureState.dx) > 5 || Math.abs(gestureState.dy) > 5;
 
   handlePanResponderGrant = () => {
-    this.pan.setOffset({ x: this.pan.x._value, y: this.pan.y._value });
+    this.pan.setOffset({ x: this.valueX, y: this.valueY });
     this.pan.setValue({ x: 0, y: 0 });
-  };
+  };e
 
   handlePanResponderMove = () => Animated.event([
     null, { dx: this.pan.x, dy: this.props.dragY ? this.pan.y : new Animated.Value(0) },
@@ -224,41 +224,52 @@ export default class SwiperAnimated extends PureComponent {
             dragDownToBack,
         } = this.props;
 
-
     let velocity;
-    if (vx > 0) {
-      velocity = clamp(vx, 3, 5);
+    if (vx >= 0) {
+      velocity = clamp(vx, 4, 6);
     } else if (vx < 0) {
-      velocity = clamp(vx * -1, 3, 5) * -1;
+      velocity = clamp(vx * -1, 4, 6) * -1;
     } else {
       velocity = dx < 0 ? -3 : 3;
     }
+
+    let velocityY;
+    if (vy >= 0) {
+      velocityY = clamp(vy, 4.5, 10);
+    } else if (vy < 0) {
+      velocityY = clamp(vy * -1, 4.5, 10) * -1;
+    } else {
+      velocityY = dy < 0 ? -6 : 6;
+    }
+
     if ((dx === 0) && (dy === 0)) {
       onClick(card);
       if (tapToNext) this.advanceState(velocity, vy, true);
     }
 
-    if (dragDownToBack && Math.abs(dx) < 20 && dy > SWIPE_THRESHOLD - 30) {
-      this.advanceState(velocity, vy);
+    const accumulatedX = Math.abs(dx);
+
+    if (dragDownToBack && accumulatedX < 20 && dy > SWIPE_THRESHOLD - 30) {
+      this.advanceState(velocity, vy, false);
       return;
     }
 
-    const panX = Math.abs(this._valueX);
-    const panY = Math.abs(this._valueY);
+    const panX = Math.abs(this.valueX);
+    const panY = Math.abs(this.valueY);
 
     if ((!isNaN(panY) && panX > SWIPE_THRESHOLD) || (!isNaN(panY) && panY > SWIPE_THRESHOLD)) {
       if (stack) {
                 // if stack, any direction removes card
-        this.advanceState(velocity, vy, true);
+        this.advanceState(velocity, vy, true, accumulatedX, velocityY);
         return;
       }
 
-      if (this._valueX > 0) {
+      if (this.valueX > 0) {
         onRightSwipe(card);
         this.advanceState(velocity, vy, true);
       } else {
         onLeftSwipe(card);
-        this.advanceState(velocity, vy);
+        this.advanceState(velocity, vy, false);
       }
       onRemoveCard(this.currentIndex[this.guid]);
     } else {
@@ -303,15 +314,18 @@ export default class SwiperAnimated extends PureComponent {
     else this.goToPrevCard();
   }
 
-  advanceState = (velocity, vy, isNext) => {
+  advanceState = (velocityX, vy, isNext, accumulatedX, velocityY) => {
     const { smoothTransition } = this.props;
 
     if (smoothTransition) {
       this.handleDirection(isNext);
     } else {
+      const velocity = accumulatedX < SWIPE_THRESHOLD ?
+                { x: 0, y: velocityY } : { x: velocityX, y: vy };
+
       this.cardAnimation = Animated.decay(this.pan, {
-        velocity: { x: velocity, y: vy },
-        deceleration: 0.983,
+        velocity,
+        deceleration: 0.99,
       });
 
       this.cardAnimation.start((status) => {
@@ -443,14 +457,12 @@ export default class SwiperAnimated extends PureComponent {
     const dots = [];
     for (let i = 0; i < total; i += 1) {
       dots.push(
-        <TouchableOpacity
-          key={uuid()}
-          onPress={() => this.jumpToIndex(i)}
-          style={[styles.dot, {
-            backgroundColor: paginationDotColor || '#C5C5C5',
-          },
-            index >= i ? { backgroundColor: paginationActiveDotColor || '#4D4D4E' } : null]}
-        />,
+        <RippleFeedback key={uuid()} onPress={() => this.jumpToIndex(i)}>
+          <View
+            style={[styles.dot, { backgroundColor: paginationDotColor || '#C5C5C5' },
+              index >= i ? { backgroundColor: paginationActiveDotColor || '#4D4D4E' } : null]}
+          />
+        </RippleFeedback>,
             );
     }
 
@@ -501,10 +513,10 @@ export default class SwiperAnimated extends PureComponent {
                dont hide if there are not enough cards anymore
                =============================================================================== */
                 // to hide the card, set the offsetY the samle value as the card above / before
-        const _cardOffsetY = this.calcOffsetY(count - 2, offsetY);
+        const lastOffsetY = this.calcOffsetY(count - 2, offsetY);
         translateY = Animated.add(this.pan.y, this.pan.x).interpolate({
           inputRange: [-120, 0, 120],
-          outputRange: [cardOffsetYEnd, _cardOffsetY, cardOffsetYEnd],
+          outputRange: [cardOffsetYEnd, lastOffsetY, cardOffsetYEnd],
           extrapolate: 'clamp',
         });
         scaleX = Animated.add(this.pan.y, this.pan.x).interpolate({
@@ -512,21 +524,18 @@ export default class SwiperAnimated extends PureComponent {
           outputRange: [cardScaleEnd, cardScaleX, cardScaleEnd],
           extrapolate: 'clamp',
         });
+        opacity = this.enter.interpolate({ inputRange: [0.6, 1], outputRange: [0.8, 1] });
       } else if (i === count - 1) {
               /* ===============================================================================
                first card!
                add panHandlers and other transforms
                =============================================================================== */
-        rotate = this.pan.x.interpolate({ inputRange: [-700, 0, 700], outputRange: ['-10deg', '0deg', '10deg'] });
+        rotate = this.pan.x.interpolate({ inputRange: [-400, 0, 400], outputRange: ['-8deg', '0deg', '8deg'] });
         translateY = this.pan.y;
         translateX = this.pan.x;
-        opacity = this.pan.x.interpolate({
-          inputRange: [-320, 0, 320],
-          outputRange: [0.99, 1, 0.99],
-        });
         panHandlers = swiper ? this.panResponder.panHandlers : {};
-        if (this.pan.y === 0) {
-          translateY = this.enter.interpolate({ inputRange: [0.7, 1], outputRange: [0, 30] });
+        if (this.pan.y === 0 && this.pan.x === 0) {
+          translateY = this.enter.interpolate({ inputRange: [0.5, 1], outputRange: [5, 50] });
         }
       } else {
               /* ===============================================================================
@@ -542,6 +551,7 @@ export default class SwiperAnimated extends PureComponent {
           outputRange: [cardScaleEnd, cardScaleX, cardScaleEnd],
           extrapolate: 'clamp',
         });
+        opacity = this.enter.interpolate({ inputRange: [0.6, 1], outputRange: [0.9, 1] });
         if (this.pan.y === 0) {
           translateY = this.enter.interpolate({ inputRange: [0.5, 1], outputRange: [0, 30] });
         }
