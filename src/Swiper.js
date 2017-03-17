@@ -93,6 +93,7 @@ export default class SwiperAnimated extends PureComponent {
     paginationDotColor: PropTypes.string,
     paginationActiveDotColor: PropTypes.string,
     showPaginationBelow: PropTypes.bool,
+    hidePaginationOnLast: PropTypes.bool,
     onFinish: PropTypes.func,
     toolbarStyle: PropTypes.any,
   };
@@ -127,6 +128,7 @@ export default class SwiperAnimated extends PureComponent {
     paginationDotColor: '#C5C5C5',
     paginationActiveDotColor: '#4D4D4E',
     showPaginationBelow: false,
+    hidePaginationOnLast: false,
     onFinish: () => {},
     toolbarStyle: null,
   };
@@ -480,6 +482,16 @@ export default class SwiperAnimated extends PureComponent {
     </View>);
   }
 
+  isPagination = () => {
+    const { showPagination, hidePaginationOnLast, children } = this.props;
+    if (showPagination && hidePaginationOnLast) {
+      return children.length - 1 !== this.currentIndex[this.guid];
+    } else if (showPagination) {
+      return true;
+    }
+    return false;
+  }
+
   /**
    * Renders the cards as a stack with props.stackDepth cards deep.
    */
@@ -621,13 +633,13 @@ export default class SwiperAnimated extends PureComponent {
   }
 
   render() {
-    const { stack, showPagination, showToolbar, style: propStyle } = this.props;
+    const { stack, showToolbar, style: propStyle } = this.props;
 
     return (
       <ThemeProvider uiTheme={uiTheme}>
         <View style={[styles.container, propStyle]}>
           {showToolbar && this.renderToolbar()}
-          {showPagination && this.renderPagination()}
+          {this.isPagination() && this.renderPagination()}
           {stack ? this.renderStack() : this.renderCard()}
 
         </View>
