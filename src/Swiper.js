@@ -1,14 +1,13 @@
 import React, { PureComponent, PropTypes } from 'react';
 
 import {
-    StyleSheet,
-    View,
-    Text,
-    Animated,
-    PanResponder,
-    Dimensions,
-    Platform,
-    BackAndroid,
+  StyleSheet,
+  View,
+  Animated,
+  PanResponder,
+  Dimensions,
+  Platform,
+  BackAndroid,
 } from 'react-native';
 import clamp from 'clamp';
 
@@ -34,10 +33,16 @@ const styles = StyleSheet.create({
     marginRight: 3,
   },
   dotContainer: {
-    flex: 1,
+    height: 60,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  bottomPagination: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
 });
 
@@ -80,15 +85,16 @@ export default class SwiperAnimated extends PureComponent {
     tapToNext: PropTypes.bool,
     dragDownToBack: PropTypes.bool,
     backPressToBack: PropTypes.bool,
+    showToolbar: PropTypes.bool,
+    toolbarLeft: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
+    toolbarRight: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
+    toolbarCenter: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
     showPagination: PropTypes.bool,
-    paginationStyle: PropTypes.any,
-    paginationLeft: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-    paginationRight: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-    onPaginationLeftPress: PropTypes.func,
-    onPaginationRightPress: PropTypes.func,
     paginationDotColor: PropTypes.string,
     paginationActiveDotColor: PropTypes.string,
+    showPaginationBelow: PropTypes.bool,
     onFinish: PropTypes.func,
+    toolbarStyle: PropTypes.any,
   };
 
   static defaultProps = {
@@ -102,14 +108,10 @@ export default class SwiperAnimated extends PureComponent {
     scaleOthers: true,
     stackOffsetY: 3,
     stackDepth: 5,
-    onClick: () => {
-    },
-    onRightSwipe: () => {
-    },
-    onLeftSwipe: () => {
-    },
-    onRemoveCard: () => {
-    },
+    onClick: () => {},
+    onRightSwipe: () => {},
+    onLeftSwipe: () => {},
+    onRemoveCard: () => {},
     renderCard: null,
     style: styles.container,
     dragY: true,
@@ -117,30 +119,26 @@ export default class SwiperAnimated extends PureComponent {
     tapToNext: false,
     dragDownToBack: false,
     backPressToBack: true,
+    showToolbar: false,
+    toolbarLeft: <View />,
+    toolbarRight: <View />,
+    toolbarCenter: <View />,
     showPagination: true,
-    paginationStyle: { container: { paddingLeft: 10, paddingRight: 10 } },
-    paginationLeft: <Text>HOME</Text>,
-    paginationRight: <Text>SHARE</Text>,
-    onPaginationLeftPress: () => {
-    },
-    onPaginationRightPress: () => {
-    },
     paginationDotColor: '#C5C5C5',
     paginationActiveDotColor: '#4D4D4E',
-    onFinish: () => {
-    },
+    showPaginationBelow: false,
+    onFinish: () => {},
+    toolbarStyle: null,
   };
 
   constructor(props) {
     super(props);
-
     const { children, swiperThreshold, index } = this.props;
-
     SWIPE_THRESHOLD = swiperThreshold || SWIPE_THRESHOLD;
 
     this.currentIndex = {};
-
     this.guid = uuid();
+
     if (!this.currentIndex[this.guid]) this.currentIndex[this.guid] = index;
 
     this.pan = new Animated.ValueXY();
@@ -148,7 +146,7 @@ export default class SwiperAnimated extends PureComponent {
     this.valueY = 0;
 
     this.enter = new Animated.Value(0.9);
-    this.fadeAnim = new Animated.Value(0.8);
+    this.lessonLoop = new Animated.Value(0.8);
 
     this.state = {
       card: children[this.currentIndex[this.guid]],
@@ -174,6 +172,7 @@ export default class SwiperAnimated extends PureComponent {
   componentDidMount() {
     this.isComponentMounted = true;
     this.animateEntrance();
+
     if (Platform.OS === 'android' && this.props.backPressToBack) {
       BackAndroid.addEventListener('hardwareBackPress', this.handleBackPress);
     }
@@ -199,7 +198,7 @@ export default class SwiperAnimated extends PureComponent {
   }
 
   handleMoveShouldSetPanResponder = (e, gestureState) =>
-    Math.abs(gestureState.dx) > 5 || Math.abs(gestureState.dy) > 5;
+  Math.abs(gestureState.dx) > 5 || Math.abs(gestureState.dy) > 5;
 
   handlePanResponderGrant = () => {
     this.pan.setOffset({ x: this.valueX, y: this.valueY });
@@ -215,14 +214,14 @@ export default class SwiperAnimated extends PureComponent {
     this.pan.flattenOffset();
 
     const {
-            onRightSwipe,
-            onLeftSwipe,
-            onRemoveCard,
-            onClick,
-            tapToNext,
-            stack,
-            dragDownToBack,
-        } = this.props;
+      onRightSwipe,
+      onLeftSwipe,
+      onRemoveCard,
+      onClick,
+      tapToNext,
+      stack,
+      dragDownToBack,
+    } = this.props;
 
     let velocity;
     if (vx >= 0) {
@@ -259,7 +258,7 @@ export default class SwiperAnimated extends PureComponent {
 
     if ((!isNaN(panY) && panX > SWIPE_THRESHOLD) || (!isNaN(panY) && panY > SWIPE_THRESHOLD)) {
       if (stack) {
-                // if stack, any direction removes card
+        // if stack, any direction removes card
         this.advanceState(velocity, vy, true, accumulatedX, velocityY);
         return;
       }
@@ -321,7 +320,7 @@ export default class SwiperAnimated extends PureComponent {
       this.handleDirection(isNext);
     } else {
       const velocity = accumulatedX < SWIPE_THRESHOLD ?
-                { x: 0, y: velocityY } : { x: velocityX, y: vy };
+        { x: 0, y: velocityY } : { x: velocityX, y: vy };
 
       this.cardAnimation = Animated.decay(this.pan, {
         velocity,
@@ -372,14 +371,14 @@ export default class SwiperAnimated extends PureComponent {
 
   animateEntrance = () => {
     Animated.timing(
-            this.fadeAnim,
-            { toValue: 1 },
-        ).start();
+      this.lessonLoop,
+      { toValue: 1 },
+    ).start();
 
     Animated.spring(
-            this.enter,
-            { toValue: 1, tension: 20 },
-        ).start();
+      this.enter,
+      { toValue: 1, tension: 20 },
+    ).start();
   }
 
   resetPan = () => {
@@ -394,7 +393,7 @@ export default class SwiperAnimated extends PureComponent {
 
     this.pan.setValue({ x: 0, y: 0 });
     this.enter.setValue(stack || smoothTransition ? 0.985 : 0);
-    this.fadeAnim.setValue(0.8);
+    this.lessonLoop.setValue(0.8);
     this.animateEntrance();
   }
 
@@ -442,17 +441,23 @@ export default class SwiperAnimated extends PureComponent {
     });
   }
 
+  renderToolbar = () => {
+    const { toolbarStyle, toolbarLeft, toolbarRight, toolbarCenter } = this.props;
+
+    return (
+      <Toolbar
+        leftElement={toolbarLeft}
+        centerElement={toolbarCenter}
+        rightElement={toolbarRight}
+        style={toolbarStyle}
+      />
+    );
+  }
+
   renderPagination = () => {
     const total = this.props.children.length;
     const index = this.currentIndex[this.guid];
-    const {
-            paginationLeft,
-            paginationRight, onPaginationLeftPress,
-            onPaginationRightPress,
-            paginationStyle,
-            paginationDotColor,
-            paginationActiveDotColor,
-        } = this.props;
+    const { paginationDotColor, paginationActiveDotColor, showPaginationBelow } = this.props;
 
     const dots = [];
     for (let i = 0; i < total; i += 1) {
@@ -463,38 +468,35 @@ export default class SwiperAnimated extends PureComponent {
               index >= i ? { backgroundColor: paginationActiveDotColor || '#4D4D4E' } : null]}
           />
         </RippleFeedback>,
-            );
+      );
     }
 
-    return (
-      <Toolbar
-        style={paginationStyle}
-        leftElement={paginationLeft}
-        onLeftElementPress={onPaginationLeftPress}
-        onRightElementPress={onPaginationRightPress}
-        rightElement={paginationRight}
-        centerElement={<View style={styles.dotContainer}>{dots}</View>}
-      />
-    );
+    return (<View
+      style={[styles.dotContainer,
+        showPaginationBelow ? styles.bottomPagination : null]
+      }
+    >
+      {dots}
+    </View>);
   }
 
-    /**
-     * Renders the cards as a stack with props.stackDepth cards deep.
-     */
+  /**
+   * Renders the cards as a stack with props.stackDepth cards deep.
+   */
   renderStack = () => {
     const { swiper, stackOffsetY: offsetY, stackDepth, scaleOthers } = this.props;
 
     const reversedCards = this.props.children
-            .slice(this.currentIndex[this.guid], this.currentIndex[this.guid] + stackDepth)
-            .reverse();
+      .slice(this.currentIndex[this.guid], this.currentIndex[this.guid] + stackDepth)
+      .reverse();
 
     const count = reversedCards.length;
 
     const cardStack = reversedCards.map((card, i) => {
-            // calculate transforms depending on the card index (reversed style)
+      // calculate transforms depending on the card index (reversed style)
       const cardOffsetY = this.calcOffsetY(count - i - 1, offsetY);
       const cardScaleX = this.calcScale(count - i - 1);
-            // the end position equals the position of the card above (=> reduce index)
+      // the end position equals the position of the card above (=> reduce index)
       const cardOffsetYEnd = this.calcOffsetY(count - i - 2, offsetY);
       const cardScaleEnd = this.calcScale(count - i - 2);
 
@@ -507,12 +509,12 @@ export default class SwiperAnimated extends PureComponent {
       const scaleY = 1;
 
       if (i === 0 && count > stackDepth) {
-              /* ===============================================================================
-               last card!
-               hide it behind the others at first, show it after transforms
-               dont hide if there are not enough cards anymore
-               =============================================================================== */
-                // to hide the card, set the offsetY the samle value as the card above / before
+        /* ===============================================================================
+         last card!
+         hide it behind the others at first, show it after transforms
+         dont hide if there are not enough cards anymore
+         =============================================================================== */
+        // to hide the card, set the offsetY the samle value as the card above / before
         const lastOffsetY = this.calcOffsetY(count - 2, offsetY);
         translateY = Animated.add(this.pan.y, this.pan.x).interpolate({
           inputRange: [-120, 0, 120],
@@ -526,10 +528,10 @@ export default class SwiperAnimated extends PureComponent {
         });
         opacity = this.enter.interpolate({ inputRange: [0.6, 1], outputRange: [0.8, 1] });
       } else if (i === count - 1) {
-              /* ===============================================================================
-               first card!
-               add panHandlers and other transforms
-               =============================================================================== */
+        /* ===============================================================================
+         first card!
+         add panHandlers and other transforms
+         =============================================================================== */
         rotate = this.pan.x.interpolate({ inputRange: [-400, 0, 400], outputRange: ['-8deg', '0deg', '8deg'] });
         translateY = this.pan.y;
         translateX = this.pan.x;
@@ -538,9 +540,9 @@ export default class SwiperAnimated extends PureComponent {
           translateY = this.enter.interpolate({ inputRange: [0.5, 1], outputRange: [5, 50] });
         }
       } else {
-              /* ===============================================================================
-               cards between first and last!
-               =============================================================================== */
+        /* ===============================================================================
+         cards between first and last!
+         =============================================================================== */
         translateY = Animated.add(this.pan.y, this.pan.x).interpolate({
           inputRange: [-120, 0, 120],
           outputRange: [cardOffsetYEnd, cardOffsetY, cardOffsetYEnd],
@@ -566,11 +568,11 @@ export default class SwiperAnimated extends PureComponent {
         height: deviceHeight - 100 - offsetY,
         opacity,
         transform: [
-                    { translateY },
-                    { rotate },
-                    { translateX },
-                    { scaleX: scaleOthers ? scaleX : 1 },
-                    { scaleY },
+          { translateY },
+          { rotate },
+          { translateX },
+          { scaleX: scaleOthers ? scaleX : 1 },
+          { scaleY },
         ],
       };
 
@@ -596,7 +598,7 @@ export default class SwiperAnimated extends PureComponent {
 
     const rotate = this.pan.x.interpolate({ inputRange: [-200, 0, 200], outputRange: ['-30deg', '0deg', '30deg'] });
     const opacity = smoothTransition ?
-            1 : this.pan.x.interpolate({ inputRange: [-200, 0, 200], outputRange: [0.5, 1, 0.5] });
+      1 : this.pan.x.interpolate({ inputRange: [-200, 0, 200], outputRange: [0.5, 1, 0.5] });
 
     const scale = this.enter;
 
@@ -619,13 +621,15 @@ export default class SwiperAnimated extends PureComponent {
   }
 
   render() {
-    const { stack, showPagination, style: propStyle } = this.props;
+    const { stack, showPagination, showToolbar, style: propStyle } = this.props;
 
     return (
       <ThemeProvider uiTheme={uiTheme}>
         <View style={[styles.container, propStyle]}>
-          {showPagination ? this.renderPagination() : null}
+          {showToolbar && this.renderToolbar()}
+          {showPagination && this.renderPagination()}
           {stack ? this.renderStack() : this.renderCard()}
+
         </View>
       </ThemeProvider>
     );

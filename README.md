@@ -59,9 +59,6 @@ const styles = {
 
 export default () => <Swiper
   style={styles.wrapper}
-  paginationStyle={{ container: { backgroundColor: 'transparent' } }}
-  paginationLeft={''}
-  paginationRight={''}
   smoothTransition
   loop
 >
