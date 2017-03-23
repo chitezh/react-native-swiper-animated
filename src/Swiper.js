@@ -148,7 +148,7 @@ export default class SwiperAnimated extends PureComponent {
     this.valueY = 0;
 
     this.enter = new Animated.Value(0.9);
-    this.lessonLoop = new Animated.Value(0.8);
+    this.textAnim = new Animated.Value(0.8);
 
     this.state = {
       card: children[this.currentIndex[this.guid]],
@@ -373,7 +373,7 @@ export default class SwiperAnimated extends PureComponent {
 
   animateEntrance = () => {
     Animated.timing(
-      this.lessonLoop,
+      this.textAnim,
       { toValue: 1 },
     ).start();
 
@@ -395,7 +395,7 @@ export default class SwiperAnimated extends PureComponent {
 
     this.pan.setValue({ x: 0, y: 0 });
     this.enter.setValue(stack || smoothTransition ? 0.985 : 0);
-    this.lessonLoop.setValue(0.8);
+    this.textAnim.setValue(0.8);
     this.animateEntrance();
   }
 
@@ -443,6 +443,16 @@ export default class SwiperAnimated extends PureComponent {
     });
   }
 
+  isPagination = () => {
+    const { showPagination, hidePaginationOnLast, children } = this.props;
+    if (showPagination && hidePaginationOnLast) {
+      return children.length - 1 !== this.currentIndex[this.guid];
+    } else if (showPagination) {
+      return true;
+    }
+    return false;
+  }
+
   renderToolbar = () => {
     const { toolbarStyle, toolbarLeft, toolbarRight, toolbarCenter } = this.props;
 
@@ -482,23 +492,13 @@ export default class SwiperAnimated extends PureComponent {
     </View>);
   }
 
-  isPagination = () => {
-    const { showPagination, hidePaginationOnLast, children } = this.props;
-    if (showPagination && hidePaginationOnLast) {
-      return children.length - 1 !== this.currentIndex[this.guid];
-    } else if (showPagination) {
-      return true;
-    }
-    return false;
-  }
-
   /**
    * Renders the cards as a stack with props.stackDepth cards deep.
    */
   renderStack = () => {
-    const { swiper, stackOffsetY: offsetY, stackDepth, scaleOthers } = this.props;
+    const { swiper, stackOffsetY: offsetY, stackDepth, scaleOthers, children } = this.props;
 
-    const reversedCards = this.props.children
+    const reversedCards = children
       .slice(this.currentIndex[this.guid], this.currentIndex[this.guid] + stackDepth)
       .reverse();
 
@@ -547,7 +547,8 @@ export default class SwiperAnimated extends PureComponent {
         rotate = this.pan.x.interpolate({ inputRange: [-400, 0, 400], outputRange: ['-8deg', '0deg', '8deg'] });
         translateY = this.pan.y;
         translateX = this.pan.x;
-        panHandlers = swiper ? this.panResponder.panHandlers : {};
+        panHandlers = swiper && children.length - 1 !== this.currentIndex[this.guid] ?
+          this.panResponder.panHandlers : {};
         if (this.pan.y === 0 && this.pan.x === 0) {
           translateY = this.enter.interpolate({ inputRange: [0.5, 1], outputRange: [5, 50] });
         }
@@ -641,7 +642,6 @@ export default class SwiperAnimated extends PureComponent {
           {showToolbar && this.renderToolbar()}
           {this.isPagination() && this.renderPagination()}
           {stack ? this.renderStack() : this.renderCard()}
-
         </View>
       </ThemeProvider>
     );
