@@ -85,17 +85,19 @@ export default class SwiperAnimated extends PureComponent {
     tapToNext: PropTypes.bool,
     dragDownToBack: PropTypes.bool,
     backPressToBack: PropTypes.bool,
+    onFirstBackPressed: PropTypes.func,
     showToolbar: PropTypes.bool,
     toolbarLeft: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
     toolbarRight: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
     toolbarCenter: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
+    toolbarStyle: PropTypes.any,
     showPagination: PropTypes.bool,
     paginationDotColor: PropTypes.string,
     paginationActiveDotColor: PropTypes.string,
     showPaginationBelow: PropTypes.bool,
     hidePaginationOnLast: PropTypes.bool,
+    renderPagination: PropTypes.func,
     onFinish: PropTypes.func,
-    toolbarStyle: PropTypes.any,
   };
 
   static defaultProps = {
@@ -107,7 +109,7 @@ export default class SwiperAnimated extends PureComponent {
     allowGestureTermination: false,
     stack: false,
     scaleOthers: true,
-    stackOffsetY: 3,
+    stackOffsetY: 5,
     stackDepth: 5,
     onClick: () => {},
     onRightSwipe: () => {},
@@ -120,17 +122,19 @@ export default class SwiperAnimated extends PureComponent {
     tapToNext: false,
     dragDownToBack: false,
     backPressToBack: true,
+    onFirstBackPressed: () => {},
     showToolbar: false,
     toolbarLeft: <View />,
     toolbarRight: <View />,
     toolbarCenter: <View />,
+    toolbarStyle: null,
     showPagination: true,
     paginationDotColor: '#C5C5C5',
     paginationActiveDotColor: '#4D4D4E',
     showPaginationBelow: false,
     hidePaginationOnLast: false,
+    renderPagination: null,
     onFinish: () => {},
-    toolbarStyle: null,
   };
 
   constructor(props) {
@@ -425,9 +429,11 @@ export default class SwiperAnimated extends PureComponent {
 
   handleBackPress = () => {
     if (this.currentIndex[this.guid] === 0) {
-      return false;
+      this.props.onFirstBackPressed();
+    } else {
+      this.forceLeftSwipe();
     }
-    this.forceLeftSwipe();
+
     return true;
   }
 
@@ -469,7 +475,15 @@ export default class SwiperAnimated extends PureComponent {
   renderPagination = () => {
     const total = this.props.children.length;
     const index = this.currentIndex[this.guid];
-    const { paginationDotColor, paginationActiveDotColor, showPaginationBelow } = this.props;
+    const { paginationDotColor, paginationActiveDotColor,
+      showPaginationBelow, renderPagination } = this.props;
+
+    if (renderPagination) {
+      return (
+        <View style={[showPaginationBelow && styles.bottomPagination]}>
+          {renderPagination(total, index)}
+        </View>);
+    }
 
     const dots = [];
     for (let i = 0; i < total; i += 1) {
@@ -483,13 +497,10 @@ export default class SwiperAnimated extends PureComponent {
       );
     }
 
-    return (<View
-      style={[styles.dotContainer,
-        showPaginationBelow ? styles.bottomPagination : null]
-      }
-    >
-      {dots}
-    </View>);
+    return (
+      <View style={[styles.dotContainer, showPaginationBelow && styles.bottomPagination]}>
+        {dots}
+      </View>);
   }
 
   /**
@@ -578,7 +589,7 @@ export default class SwiperAnimated extends PureComponent {
         left: 0,
         right: 0,
         borderRadius: 10,
-        height: deviceHeight - 100 - offsetY,
+        height: deviceHeight - 130 - offsetY,
         opacity,
         transform: [
           { translateY },
@@ -599,7 +610,7 @@ export default class SwiperAnimated extends PureComponent {
     });
 
     return (
-      <View style={{ position: 'relative', flexDirection: 'column' }}>
+      <View>
         {cardStack}
       </View>
     );

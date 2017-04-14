@@ -98,7 +98,7 @@ $ react-native run-android
 | stack | false | `bool` | Set to `true` to stack views |
 | swiper | true | `bool` | Set to `false` to disable swiper (used when navigating using methods only)|
 
-#### Custom basic style & content
+#### Custom
 
 | Prop  | Default  | Type | Description |
 | :------------ |:---------------:| :---------------:| :-----|
@@ -108,8 +108,29 @@ $ react-native run-android
 | stackOffsetY | 3 | `number` | Set vertical offset   |
 | stackDepth | 5 | `number` | Set number of cards to display in card stack   |
 | scaleOthers | true | `bool` | Set to `false` to disable scaling of cards below the top card |
-[see more](https://github.com/chitezh/react-native-swiper-animated/blob/master/src/Swiper.js#L59)
 
+#### Pagination
+
+| Prop  | Default  | Type | Description |
+| :------------ |:---------------:| :---------------:| :-----|
+| showPagination | `true` | `bool` | Set to `false` to disable pagination |
+| paginationDotColor | `#C5C5C5` | `string` | In active pagination bullet color |
+| paginationActiveDotColor | `#4D4D4E` | `string` | Active pagination bullet color |
+| showPaginationBelow | `false` | `bool` | Set to `true` to render pagination below content |
+| hidePaginationOnLast | `false` | `bool` | Set to `true` to hide pagination on last card |
+| renderPagination | `null` | `func` | render custom pagination - calls func with (total, currentIndex) |
+
+#### Toolbar
+
+| Prop  | Default  | Type | Description |
+| :------------ |:---------------:| :---------------:| :-----|
+| showToolbar | `false` | `bool` | Set to `true` to enable toolbar |
+| toolbarLeft | `<View />` | `element` | RN Element |
+| toolbarRight | `<View />` | `element` | RN Element |
+| toolbarCenter | `<View />` | `element` | RN Element |
+| toolbarStyle | {...} | `style` | See default style in [source](https://github.com/chitezh/react-native-swiper-animated/blob/master/src/Swiper.js#L56). |
+
+[Discover more](https://github.com/chitezh/react-native-swiper-animated/blob/master/src/Swiper.js#L65)
 
 ### Methods
 
