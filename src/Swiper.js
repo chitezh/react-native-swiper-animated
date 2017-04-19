@@ -320,7 +320,7 @@ export default class SwiperAnimated extends PureComponent {
   }
 
   advanceState = (velocityX, vy, isNext, accumulatedX, velocityY) => {
-    const { smoothTransition } = this.props;
+    const { smoothTransition, stack } = this.props;
 
     if (smoothTransition) {
       this.handleDirection(isNext);
@@ -330,7 +330,7 @@ export default class SwiperAnimated extends PureComponent {
 
       this.cardAnimation = Animated.decay(this.pan, {
         velocity,
-        deceleration: 0.99,
+        deceleration: stack ? 0.99 : 0.985,
       });
 
       this.cardAnimation.start((status) => {
@@ -398,7 +398,7 @@ export default class SwiperAnimated extends PureComponent {
     const { stack, smoothTransition } = this.props;
 
     this.pan.setValue({ x: 0, y: 0 });
-    this.enter.setValue(stack || smoothTransition ? 0.985 : 0);
+    this.enter.setValue(stack || smoothTransition ? 0.985 : 0.97);
     this.textAnim.setValue(0.8);
     this.animateEntrance();
   }
