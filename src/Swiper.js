@@ -46,7 +46,6 @@ const styles = StyleSheet.create({
   },
 });
 
-
 const { height: deviceHeight } = Dimensions.get('window');
 
 const uiTheme = {
@@ -330,7 +329,7 @@ export default class SwiperAnimated extends PureComponent {
 
       this.cardAnimation = Animated.decay(this.pan, {
         velocity,
-        deceleration: stack ? 0.99 : 0.985,
+        deceleration: stack ? 0.99 : 0.986,
       });
 
       this.cardAnimation.start((status) => {
@@ -449,16 +448,6 @@ export default class SwiperAnimated extends PureComponent {
     });
   }
 
-  isPagination = () => {
-    const { showPagination, hidePaginationOnLast, children } = this.props;
-    if (showPagination && hidePaginationOnLast) {
-      return children.length - 1 !== this.currentIndex[this.guid];
-    } else if (showPagination) {
-      return true;
-    }
-    return false;
-  }
-
   renderToolbar = () => {
     const { toolbarStyle, toolbarLeft, toolbarRight, toolbarCenter } = this.props;
 
@@ -476,11 +465,16 @@ export default class SwiperAnimated extends PureComponent {
     const total = this.props.children.length;
     const index = this.currentIndex[this.guid];
     const { paginationDotColor, paginationActiveDotColor,
-      showPaginationBelow, renderPagination } = this.props;
+      showPaginationBelow, renderPagination, stack, hidePaginationOnLast } = this.props;
 
     if (renderPagination) {
       return (
-        <View style={[showPaginationBelow && styles.bottomPagination]}>
+        <View
+          style={[showPaginationBelow && styles.bottomPagination,
+            !stack && { zIndex: 1000 },
+            (hidePaginationOnLast && total - 1 === index) && { opacity: 0 },
+          ]}
+        >
           {renderPagination(total, index)}
         </View>);
     }
@@ -488,7 +482,11 @@ export default class SwiperAnimated extends PureComponent {
     const dots = [];
     for (let i = 0; i < total; i += 1) {
       dots.push(
-        <RippleFeedback key={uuid()} onPress={() => this.jumpToIndex(i)}>
+        <RippleFeedback
+          hitSlop={{ top: 10, left: 10, bottom: 10, right: 10 }}
+          key={uuid()}
+          onPress={() => this.jumpToIndex(i)}
+        >
           <View
             style={[styles.dot, { backgroundColor: paginationDotColor || '#C5C5C5' },
               index >= i ? { backgroundColor: paginationActiveDotColor || '#4D4D4E' } : null]}
@@ -498,7 +496,13 @@ export default class SwiperAnimated extends PureComponent {
     }
 
     return (
-      <View style={[styles.dotContainer, showPaginationBelow && styles.bottomPagination]}>
+      <View
+        style={[styles.dotContainer,
+          showPaginationBelow && styles.bottomPagination,
+          !stack && { zIndex: 1000 },
+          (hidePaginationOnLast && total - 1 === index) && { opacity: 0 },
+        ]}
+      >
         {dots}
       </View>);
   }
@@ -635,7 +639,6 @@ export default class SwiperAnimated extends PureComponent {
 
     return (
       <Animated.View
-        key={uuid()}
         style={[styles.card, animatedCardStyles]}
         {...handler}
       >
@@ -645,13 +648,13 @@ export default class SwiperAnimated extends PureComponent {
   }
 
   render() {
-    const { stack, showToolbar, style: propStyle } = this.props;
+    const { stack, showToolbar, style: propStyle, showPagination } = this.props;
 
     return (
       <ThemeProvider uiTheme={uiTheme}>
         <View style={[styles.container, propStyle]}>
           {showToolbar && this.renderToolbar()}
-          {this.isPagination() && this.renderPagination()}
+          {showPagination && this.renderPagination()}
           {stack ? this.renderStack() : this.renderCard()}
         </View>
       </ThemeProvider>
