@@ -14,9 +14,13 @@ $ npm i react-native-swiper-animated --save
 <img src="https://raw.githubusercontent.com/chitezh/react-native-swiper-animated/master/examples/shots/stack.gif" width="280">
 <img src="https://raw.githubusercontent.com/chitezh/react-native-swiper-animated/master/examples/shots/extended.gif" width="280">
 
-
 Basic, Stack and Extended examples shots
 
+#### In Action
+
+<img src="https://raw.githubusercontent.com/chitezh/react-native-swiper-animated/master/examples/shots/leaf.gif" width="280">
+<img src="https://raw.githubusercontent.com/chitezh/react-native-swiper-animated/master/examples/shots/leaf_stack.gif" width="280">
+<img src="https://raw.githubusercontent.com/chitezh/react-native-swiper-animated/master/examples/shots/leaf_with_default_progress_bar.gif" width="280">
 
 ### Basic Usage
 
