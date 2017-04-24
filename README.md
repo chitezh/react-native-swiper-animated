@@ -142,6 +142,9 @@ Swiper to left
 #### forceRightSwipe()
 Swiper to right
 
+#### jumpToIndex(index: number)
+Jump to a particular index
+
 
 ### Development
 
