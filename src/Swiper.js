@@ -188,7 +188,7 @@ export default class SwiperAnimated extends PureComponent {
   componentWillUnmount() {
     this.isComponentMounted = false;
     if (Platform.OS === 'android' && this.props.backPressToBack) {
-      BackAndroid.removeEventListener('hardwareBackPress');
+      BackAndroid.removeEventListener('hardwareBackPress', this.handleBackPress);
     }
     this.pan.x.removeAllListeners();
     this.pan.y.removeAllListeners();
