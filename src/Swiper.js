@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import clamp from 'clamp';
 
-import uuid from 'react-native-uuid';
 import { COLOR, ThemeProvider, Toolbar, RippleFeedback } from 'react-native-material-ui';
 
 let SWIPE_THRESHOLD = 120;
@@ -97,6 +96,7 @@ export default class SwiperAnimated extends PureComponent {
     hidePaginationOnLast: PropTypes.bool,
     renderPagination: PropTypes.func,
     onFinish: PropTypes.func,
+    uuid: PropTypes.string,
   };
 
   static defaultProps = {
@@ -134,6 +134,7 @@ export default class SwiperAnimated extends PureComponent {
     hidePaginationOnLast: false,
     renderPagination: null,
     onFinish: () => {},
+    uuid: 'Y8sivEVkWc0p',
   };
 
   constructor(props) {
@@ -142,7 +143,7 @@ export default class SwiperAnimated extends PureComponent {
     SWIPE_THRESHOLD = swiperThreshold || SWIPE_THRESHOLD;
 
     this.currentIndex = {};
-    this.guid = uuid();
+    this.guid = props.uuid;
 
     if (!this.currentIndex[this.guid]) this.currentIndex[this.guid] = index;
 
@@ -484,7 +485,7 @@ export default class SwiperAnimated extends PureComponent {
       dots.push(
         <RippleFeedback
           hitSlop={{ top: 10, left: 10, bottom: 10, right: 10 }}
-          key={uuid()}
+          key={i}
           onPress={() => this.jumpToIndex(i)}
         >
           <View
@@ -604,13 +605,14 @@ export default class SwiperAnimated extends PureComponent {
         ],
       };
 
-      return (<Animated.View
-        key={uuid()}
-        style={animatedCardStyles}
-        {...panHandlers}
-      >
-        {card}
-      </Animated.View>);
+      return (
+        <Animated.View
+          key={i}
+          style={animatedCardStyles}
+          {...panHandlers}
+        >
+          {card}
+        </Animated.View>);
     });
 
     return (
