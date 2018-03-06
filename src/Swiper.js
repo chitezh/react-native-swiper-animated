@@ -612,7 +612,7 @@ export default class SwiperAnimated extends PureComponent {
 
       return (
         <Animated.View
-          key={i}
+          key={card.hasOwnProperty("key") ? card.key : i}
           style={animatedCardStyles}
           {...panHandlers}
         >
