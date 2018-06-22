@@ -33,7 +33,7 @@
   "peerDependencies": {
     "react": "*",
     "react-native": "*",
-    "prop-types": "^15.6.0"
+    "prop-types": "*"
   },
   "devDependencies": {
     "babel-eslint": "^7.1.1",

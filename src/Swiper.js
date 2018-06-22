@@ -13,6 +13,8 @@ import clamp from 'clamp';
 
 import { COLOR, ThemeProvider, Toolbar, RippleFeedback } from 'react-native-material-ui';
 
+const has = Object.prototype.hasOwnProperty;
+
 let SWIPE_THRESHOLD = 120;
 
 const styles = StyleSheet.create({
@@ -277,12 +279,12 @@ export default class SwiperAnimated extends PureComponent {
         return;
       }
 
-      if (this.valueX > 0) {
+      if (this.valueX > 0 && swipeDirection === 'right') {
         onRightSwipe(card);
-        this.advanceState(velocity, vy, swipeDirection === 'right');
+        this.advanceState(velocity, vy, true);
       } else {
         onLeftSwipe(card);
-        this.advanceState(velocity, vy, swipeDirection === 'left');
+        this.advanceState(velocity, vy, false);
       }
       onRemoveCard(this.currentIndex[this.guid]);
     } else {
@@ -615,7 +617,7 @@ export default class SwiperAnimated extends PureComponent {
 
       return (
         <Animated.View
-          key={card.hasOwnProperty("key") ? card.key : i}
+          key={has(card, 'key') ? card.key : i}
           style={animatedCardStyles}
           {...panHandlers}
         >
