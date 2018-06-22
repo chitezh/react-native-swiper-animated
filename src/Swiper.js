@@ -270,7 +270,7 @@ export default class SwiperAnimated extends PureComponent {
     if ((!isNaN(panY) && panX > SWIPE_THRESHOLD) || (!isNaN(panY) && panY > SWIPE_THRESHOLD)) {
       if (stack) {
         // if stack, any direction removes card
-        if (this.valueX > 0) {
+        if (this.valueX > 0 && swipeDirection === 'right') {
           onRightSwipe(card);
         } else {
           onLeftSwipe(card);

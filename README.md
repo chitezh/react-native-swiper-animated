@@ -99,6 +99,7 @@ $ react-native run-android
 | index | 0 | `number` | Index number of initial slide. |
 | stack | false | `bool` | Set to `true` to stack views |
 | swiper | true | `bool` | Set to `false` to disable swiper (used when navigating using methods only)|
+| swipeDirection | right | `string` | Set to `left` to move to next card on left swipe |
 
 #### Custom
 
