@@ -97,6 +97,7 @@ export default class SwiperAnimated extends PureComponent {
     renderPagination: PropTypes.func,
     onFinish: PropTypes.func,
     uuid: PropTypes.string,
+    swipeDirection: PropTypes.string,
   };
 
   static defaultProps = {
@@ -135,6 +136,7 @@ export default class SwiperAnimated extends PureComponent {
     renderPagination: null,
     onFinish: () => {},
     uuid: 'Y8sivEVkWc0p',
+    swipeDirection: 'right',
   };
 
   constructor(props) {
@@ -227,6 +229,7 @@ export default class SwiperAnimated extends PureComponent {
       tapToNext,
       stack,
       dragDownToBack,
+      swipeDirection,
     } = this.props;
 
     let velocity;
@@ -276,10 +279,10 @@ export default class SwiperAnimated extends PureComponent {
 
       if (this.valueX > 0) {
         onRightSwipe(card);
-        this.advanceState(velocity, vy, true);
+        this.advanceState(velocity, vy, swipeDirection === 'right');
       } else {
         onLeftSwipe(card);
-        this.advanceState(velocity, vy, false);
+        this.advanceState(velocity, vy, swipeDirection === 'left');
       }
       onRemoveCard(this.currentIndex[this.guid]);
     } else {
