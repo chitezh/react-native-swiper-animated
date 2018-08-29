@@ -8,10 +8,10 @@ import {
   Dimensions,
   Platform,
   BackAndroid,
+  TouchableOpacity,
+  TouchableNativeFeedback
 } from 'react-native';
 import clamp from 'clamp';
-
-import { COLOR, ThemeProvider, Toolbar, RippleFeedback } from 'react-native-material-ui';
 
 const has = Object.prototype.hasOwnProperty;
 
@@ -49,19 +49,6 @@ const styles = StyleSheet.create({
 
 const { height: deviceHeight } = Dimensions.get('window');
 
-const uiTheme = {
-  palette: {
-    primaryColor: COLOR.green500,
-  },
-  toolbar: {
-    container: {
-      height: 50,
-      backgroundColor: 'transparent',
-      elevation: 0,
-    },
-  },
-};
-
 export default class SwiperAnimated extends PureComponent {
   static propTypes = {
     children: PropTypes.array,
@@ -86,11 +73,7 @@ export default class SwiperAnimated extends PureComponent {
     dragDownToBack: PropTypes.bool,
     backPressToBack: PropTypes.bool,
     onFirstBackPressed: PropTypes.func,
-    showToolbar: PropTypes.bool,
-    toolbarLeft: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-    toolbarRight: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-    toolbarCenter: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-    toolbarStyle: PropTypes.any,
+    renderHeader: PropTypes.func,
     showPagination: PropTypes.bool,
     paginationDotColor: PropTypes.string,
     paginationActiveDotColor: PropTypes.string,
@@ -125,11 +108,7 @@ export default class SwiperAnimated extends PureComponent {
     dragDownToBack: false,
     backPressToBack: true,
     onFirstBackPressed: () => {},
-    showToolbar: false,
-    toolbarLeft: <View />,
-    toolbarRight: <View />,
-    toolbarCenter: <View />,
-    toolbarStyle: null,
+    renderHeader: () => {},
     showPagination: true,
     paginationDotColor: '#C5C5C5',
     paginationActiveDotColor: '#4D4D4E',
@@ -459,19 +438,6 @@ export default class SwiperAnimated extends PureComponent {
     });
   }
 
-  renderToolbar = () => {
-    const { toolbarStyle, toolbarLeft, toolbarRight, toolbarCenter } = this.props;
-
-    return (
-      <Toolbar
-        leftElement={toolbarLeft}
-        centerElement={toolbarCenter}
-        rightElement={toolbarRight}
-        style={toolbarStyle}
-      />
-    );
-  }
-
   renderPagination = () => {
     const total = this.props.children.length;
     const index = this.currentIndex[this.guid];
@@ -492,8 +458,9 @@ export default class SwiperAnimated extends PureComponent {
 
     const dots = [];
     for (let i = 0; i < total; i += 1) {
+      const Touchable = Platform.OS === "android" ? TouchableNativeFeedback: TouchableOpacity
       dots.push(
-        <RippleFeedback
+        <Touchable
           hitSlop={{ top: 10, left: 10, bottom: 10, right: 10 }}
           key={i}
           onPress={() => this.jumpToIndex(i)}
@@ -502,7 +469,7 @@ export default class SwiperAnimated extends PureComponent {
             style={[styles.dot, { backgroundColor: paginationDotColor || '#C5C5C5' },
               index >= i ? { backgroundColor: paginationActiveDotColor || '#4D4D4E' } : null]}
           />
-        </RippleFeedback>,
+        </Touchable>,
       );
     }
 
@@ -660,16 +627,14 @@ export default class SwiperAnimated extends PureComponent {
   }
 
   render() {
-    const { stack, showToolbar, style: propStyle, showPagination } = this.props;
+    const { stack, renderHeader, style: propStyle, showPagination } = this.props;
 
     return (
-      <ThemeProvider uiTheme={uiTheme}>
-        <View style={[styles.container, propStyle]}>
-          {showToolbar && this.renderToolbar()}
-          {showPagination && this.renderPagination()}
-          {stack ? this.renderStack() : this.renderCard()}
-        </View>
-      </ThemeProvider>
+      <View style={[styles.container, propStyle]}>
+        {this.renderHeader(this.currentIndex[this.guid])}
+        {showPagination && this.renderPagination()}
+        {stack ? this.renderStack() : this.renderCard()}
+      </View>
     );
   }
 }

@@ -27,13 +27,12 @@
   },
   "homepage": "https://github.com/chitezh/react-native-swiper-animated#readme",
   "dependencies": {
-    "clamp": "^1.0.1",
-    "react-native-material-ui": "1.22.0"
+    "clamp": "^1.0.1"
   },
   "peerDependencies": {
+    "prop-types": "*",
     "react": "*",
-    "react-native": "*",
-    "prop-types": "*"
+    "react-native": "*"
   },
   "devDependencies": {
     "babel-eslint": "^7.1.1",

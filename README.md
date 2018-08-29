@@ -127,11 +127,8 @@ $ react-native run-android
 
 | Prop  | Default  | Type | Description |
 | :------------ |:---------------:| :---------------:| :-----|
-| showToolbar | `false` | `bool` | Set to `true` to enable toolbar |
-| toolbarLeft | `<View />` | `element` | RN Element |
-| toolbarRight | `<View />` | `element` | RN Element |
-| toolbarCenter | `<View />` | `element` | RN Element |
-| toolbarStyle | {...} | `style` | See default style in [source](https://github.com/chitezh/react-native-swiper-animated/blob/master/src/Swiper.js#L56). |
+| renderHeader | `() => {}` | `func` | called with the current index |
+*react-native-material-ui was removed in version 1.5.0, you will have to call renderHeader to render a custom header*
 
 [Discover more](https://github.com/chitezh/react-native-swiper-animated/blob/master/src/Swiper.js#L65)
 
