@@ -631,7 +631,7 @@ export default class SwiperAnimated extends PureComponent {
 
     return (
       <View style={[styles.container, propStyle]}>
-        {this.renderHeader(this.currentIndex[this.guid])}
+        {renderHeader(this.currentIndex[this.guid])}
         {showPagination && this.renderPagination()}
         {stack ? this.renderStack() : this.renderCard()}
       </View>
