@@ -584,7 +584,7 @@ export default class SwiperAnimated extends PureComponent {
 
       return (
         <Animated.View
-          key={has(card, 'key') ? card.key : i}
+          key={has.call(card, 'key') && card.key ? card.key : i}
           style={animatedCardStyles}
           {...panHandlers}
         >
