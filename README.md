@@ -127,11 +127,7 @@ $ react-native run-android
 
 | Prop  | Default  | Type | Description |
 | :------------ |:---------------:| :---------------:| :-----|
-| showToolbar | `false` | `bool` | Set to `true` to enable toolbar |
-| toolbarLeft | `<View />` | `element` | RN Element |
-| toolbarRight | `<View />` | `element` | RN Element |
-| toolbarCenter | `<View />` | `element` | RN Element |
-| toolbarStyle | {...} | `style` | See default style in [source](https://github.com/chitezh/react-native-swiper-animated/blob/master/src/Swiper.js#L56). |
+| renderToolbar | `() => {}` | `func` | called with the current index |
 
 [Discover more](https://github.com/chitezh/react-native-swiper-animated/blob/master/src/Swiper.js#L65)
 
