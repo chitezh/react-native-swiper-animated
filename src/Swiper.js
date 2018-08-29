@@ -73,7 +73,7 @@ export default class SwiperAnimated extends PureComponent {
     dragDownToBack: PropTypes.bool,
     backPressToBack: PropTypes.bool,
     onFirstBackPressed: PropTypes.func,
-    renderToolbar: PropTypes.func,
+    renderHeader: PropTypes.func,
     showPagination: PropTypes.bool,
     paginationDotColor: PropTypes.string,
     paginationActiveDotColor: PropTypes.string,
@@ -108,7 +108,7 @@ export default class SwiperAnimated extends PureComponent {
     dragDownToBack: false,
     backPressToBack: true,
     onFirstBackPressed: () => {},
-    renderToolbar: () => {},
+    renderHeader: () => {},
     showPagination: true,
     paginationDotColor: '#C5C5C5',
     paginationActiveDotColor: '#4D4D4E',
@@ -627,11 +627,11 @@ export default class SwiperAnimated extends PureComponent {
   }
 
   render() {
-    const { stack, renderToolbar, style: propStyle, showPagination } = this.props;
+    const { stack, renderHeader, style: propStyle, showPagination } = this.props;
 
     return (
       <View style={[styles.container, propStyle]}>
-        {this.renderToolbar(this.currentIndex[this.guid])}
+        {this.renderHeader(this.currentIndex[this.guid])}
         {showPagination && this.renderPagination()}
         {stack ? this.renderStack() : this.renderCard()}
       </View>

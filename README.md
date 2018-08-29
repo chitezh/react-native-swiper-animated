@@ -127,7 +127,8 @@ $ react-native run-android
 
 | Prop  | Default  | Type | Description |
 | :------------ |:---------------:| :---------------:| :-----|
-| renderToolbar | `() => {}` | `func` | called with the current index |
+| renderHeader | `() => {}` | `func` | called with the current index |
+*react-native-material-ui was removed in version 1.5.0, you will have to call renderHeader to render a custom header*
 
 [Discover more](https://github.com/chitezh/react-native-swiper-animated/blob/master/src/Swiper.js#L65)
 
