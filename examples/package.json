@@ -7,9 +7,10 @@
     "watch": "node ./scripts/watch-and-copy-src.js"
   },
   "dependencies": {
-    "react": "15.3.2",
-    "react-native": "0.33.0",
-    "react-native-swiper-animated": "../"
+    "prop-types": "^15.6.2",
+    "react": "16.4.1",
+    "react-native": "0.56.0",
+    "react-native-swiper-animated": "^1.4.0"
   },
   "devDependencies": {
     "fs-extra": "^0.30.0",
