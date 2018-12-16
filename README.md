@@ -2,6 +2,9 @@
 
 Tinder like animations swiper for React Native
 
+## ATTENTION! THIS PACKAGE IS CURRENTLY UNMAINTAINED!!
+I am currently working on the v2, it's based on `react-native-gesture-handler` instead of RN's `PanResponder`. I will be more performant, cleaner and tested.
+
 ### Installation
 
 ```bash
