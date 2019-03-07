@@ -7,7 +7,7 @@ import {
   PanResponder,
   Dimensions,
   Platform,
-  BackAndroid,
+  BackHandler,
   TouchableOpacity,
   TouchableNativeFeedback
 } from 'react-native';
@@ -163,7 +163,7 @@ export default class SwiperAnimated extends PureComponent {
     this.animateEntrance();
 
     if (Platform.OS === 'android' && this.props.backPressToBack) {
-      BackAndroid.addEventListener('hardwareBackPress', this.handleBackPress);
+      BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
     }
     this.pan.x.addListener(({ value }) => { this.valueX = value; });
     this.pan.y.addListener(({ value }) => { this.valueY = value; });
@@ -172,7 +172,7 @@ export default class SwiperAnimated extends PureComponent {
   componentWillUnmount() {
     this.isComponentMounted = false;
     if (Platform.OS === 'android' && this.props.backPressToBack) {
-      BackAndroid.removeEventListener('hardwareBackPress', this.handleBackPress);
+      BackHandler.removeEventListener('hardwareBackPress', this.handleBackPress);
     }
     this.pan.x.removeAllListeners();
     this.pan.y.removeAllListeners();
