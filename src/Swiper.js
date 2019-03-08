@@ -542,7 +542,7 @@ export default class SwiperAnimated extends PureComponent {
         rotate = this.pan.x.interpolate({ inputRange: [-400, 0, 400], outputRange: ['-8deg', '0deg', '8deg'] });
         translateY = this.pan.y;
         translateX = this.pan.x;
-        panHandlers = swiper && children.length - 1 !== this.currentIndex[this.guid] || swipeThroughStack ?
+        panHandlers = swiper && (children.length - 1 !== this.currentIndex[this.guid] || swipeThroughStack) ?
           this.panResponder.panHandlers : {};
         if (this.pan.y === 0 && this.pan.x === 0) {
           translateY = this.enter.interpolate({ inputRange: [0.5, 1], outputRange: [5, 50] });
