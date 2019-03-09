@@ -72,6 +72,7 @@ export default class SwiperAnimated extends PureComponent {
     tapToNext: PropTypes.bool,
     dragDownToBack: PropTypes.bool,
     backPressToBack: PropTypes.bool,
+    swipeThroughStack: PropTypes.bool,
     onFirstBackPressed: PropTypes.func,
     renderHeader: PropTypes.func,
     showPagination: PropTypes.bool,
@@ -107,6 +108,7 @@ export default class SwiperAnimated extends PureComponent {
     tapToNext: false,
     dragDownToBack: false,
     backPressToBack: true,
+    swipeThroughStack: false,
     onFirstBackPressed: () => {},
     renderHeader: () => {},
     showPagination: true,
@@ -489,7 +491,7 @@ export default class SwiperAnimated extends PureComponent {
    * Renders the cards as a stack with props.stackDepth cards deep.
    */
   renderStack = () => {
-    const { swiper, stackOffsetY: offsetY, stackDepth, scaleOthers, children } = this.props;
+    const { swiper, stackOffsetY: offsetY, stackDepth, swipeThroughStack, scaleOthers, children } = this.props;
 
     const reversedCards = children
       .slice(this.currentIndex[this.guid], this.currentIndex[this.guid] + stackDepth)
@@ -540,7 +542,7 @@ export default class SwiperAnimated extends PureComponent {
         rotate = this.pan.x.interpolate({ inputRange: [-400, 0, 400], outputRange: ['-8deg', '0deg', '8deg'] });
         translateY = this.pan.y;
         translateX = this.pan.x;
-        panHandlers = swiper && children.length - 1 !== this.currentIndex[this.guid] ?
+        panHandlers = swiper && (children.length - 1 !== this.currentIndex[this.guid] || swipeThroughStack) ?
           this.panResponder.panHandlers : {};
         if (this.pan.y === 0 && this.pan.x === 0) {
           translateY = this.enter.interpolate({ inputRange: [0.5, 1], outputRange: [5, 50] });
